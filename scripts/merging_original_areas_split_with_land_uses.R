@@ -48,3 +48,12 @@ for(k in 1:length(lu)){
   writeRaster(r_sum,p_save,overwrite=T)
 
 }
+
+dir.create(path = file.path(p,"other_natland_final"))
+
+# salvando o que nao deu pra separar de natural land em uma pasta separada
+
+
+other <- list.files(file.path(p,"other_natland_disaggregated"),pattern = "_other_natland.tif",full.names = T)
+
+file.copy(from=other, to=file.path(p,"other_natland_final"), overwrite = TRUE)
