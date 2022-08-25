@@ -1,4 +1,6 @@
 
+# nao precisa desse script! os usos podem estar todos numa pasta so
+
 library(raster)
 
 # depois de remover os usos ESA 1992 da classe other natural uses que ainda estava agregada, faltava juntar o resultado aos rasters finais de land uses
@@ -22,6 +24,7 @@ scen_to_keep <- c("TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
 # por enquanto so tem os land uses pro cenario 3 do vetor acima. Depois teria q # fazer isso cenario por cenario
 
 i=4
+
 scen_subset <- grep(pattern = scen_to_keep[i],x = scen,value = T )
 
 # pastas com usos
