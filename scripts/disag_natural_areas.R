@@ -59,18 +59,18 @@ i=1
 
 other <- stack(file.path(p,"other_7",paste0(scen_subset[i],"_other_7.tif"))) # index here
 
-
-
 # ice_rock (using predominant land-uses ESA-2015)
 
-ice_rock <- raster(file.path(p2,"urban_rock_ice_dominant_landuse_fraction_2015_05res.tif"))
+ice_rock <- raster(file.path(p2,"urban_rock_ice_ESA_CCI_2015_dominant_landuse_fraction_05res.tif"))
+
+# isso aqui gera valores negativos
 
 other_pj <- projectRaster(from = other ,to = ice_rock )
 
-
-# # padronizing extent
-# 
-# ice_rock_res <- resample(ice_rock,other,"ngb")
+# Removendo negativos
+for (r in 1:5) {
+  other_pj [[r]][other_pj [[r]] < 0] = 0
+}
 
 
 # masking  ice_rock_urban from all other bands (years)
@@ -85,7 +85,7 @@ writeRaster(other_ice_rock,file.path(path_res,"rock_ice",
 
 #  deserts
 
-desert <- raster(file.path(p2,"desert_dominant_landuse_fraction_2015_05res.tif"))
+desert <- raster(file.path(p2,"desert_ESA_CCI_2015_dominant_landuse_fraction_05res.tif"))
 
 other_desert <- other_pj * desert
 
@@ -98,7 +98,7 @@ writeRaster(x =other_desert ,filename = file.path(path_res,"desert",
 
 # natural_grasslands
 
-grasslands <- raster(file.path(p2,"natural_grasslands_dominant_landuse_fraction_2015_05res.tif"))
+grasslands <- raster(file.path(p2,"natural_grasslands_ESA_CCI_2015_dominant_landuse_fraction_05res.tif"))
 
 other_grasslands <- other_pj * grasslands
 
@@ -109,7 +109,7 @@ writeRaster(x =other_grasslands ,filename = file.path(path_res,"grassland",
 
 # shrubland
 
-shrubland <- raster(file.path(p2,"shrubland_dominant_landuse_fraction_2015_05res.tif"))
+shrubland <- raster(file.path(p2,"shrubland_ESA_CCI_2015_dominant_landuse_fraction_05res.tif"))
 
 other_shrubland <- other_pj * shrubland
 
@@ -121,7 +121,7 @@ writeRaster(x =other_shrubland ,filename = file.path(path_res,"shrubland",
 
 # wetland
 
-wetland <- raster(file.path(p2,"wetland_dominant_landuse_fraction_2015_05res.tif"))
+wetland <- raster(file.path(p2,"wetland_ESA_CCI_2015_dominant_landuse_fraction_05res.tif"))
 
 other_wetland <- other_pj * wetland
 
@@ -131,71 +131,23 @@ writeRaster(x =other_wetland ,filename = file.path(path_res,"wetland",
             paste0(scen_subset[1],"_wetland.tif")),overwrite=T)
 
 
-# # all that's left inside the other original class!
-# 
-# # creating a class  with the disaggregated uses! 
-# 
-# wt_grass_shrub_desert_ignored <- other_desert+other_grasslands+ other_shrubland +
-#   other_wetland+other_minus_ice_rock_urban
-# 
-# # transform pixels > 0 in 0 and pixels with value 0 in one. Then, when crossing
-# # with the original other class, only uncovered pixels will remain!
-# 
-# 
-# m_other <- c(-1, 0, 1,0,2,0)
-# 
-# rclmat_other <- matrix(m_other, ncol=3, byrow=TRUE)
-# 
-# wt_grass_shrub_desert_ignored_rec <- reclassify(wt_grass_shrub_desert_ignored, rclmat_other)
-# 
-# plot(wt_grass_shrub_desert_ignored_rec[[1]])
-# 
-# other_final <- wt_grass_shrub_desert_ignored_rec*other
-# 
-# dir.create(file.path(path_res,"other_natural_lands"))
-# 
-# writeRaster(x =other_final  ,filename = file.path(path_res,"other_natural_lands", 
-#           paste0(scen_subset[1],"_other_natural_lands.tif")),overwrite=T)
+
+# oq nao desagregou, colocar como uma classe other
 
 
-# plot(other[[1]],main="other")
-# plot(other_final[[1]],main="other_final")
-# plot(wt_grass_shrub_desert_ignored[[1]],main="natural_lands_disagg")
-# plot(other_grasslands[[1]],main="grassland")
-# essa classe deveria ser valores q nao foram incluidos em nenhuma outra
+disagg <- other_desert + other_grasslands+other_ice_rock+other_shrubland+other_wetland
+
+# gera valores negativos
+
+other_non_disagg <- other_pj - disagg
 
 
-################################################################################
-#### OBS
-################################################################################
-# tem pequenas sobreposicoes! grassland com ignored. Mas melhor deixar pra 
-# corrigir isso depois!
-# desert_grass <- other_desert+other_grasslands #ok
-# 
-# grass_shrubland <- other_grasslands+other_shrubland # ok!!
-# 
-# grass_wer <- other_wetland+other_grasslands #ok
-# 
-# 
-# grass_ignored <- other_minus_ice_rock_urban+other_grasslands # esse q da bosta
-# 
-# 
-# mask_overlap
-# 
-# 
-# plot(grass_ignored[[1]]>1)
-# 
-# 
-# dir.create(file.path(path_res,"temp_apagar"))
-# 
-# writeRaster(x =grass_ignored ,filename = file.path(path_res,"temp_apagar", 
-#                   paste0(scen_subset[1],"_shrubland.tif")),overwrite=T)
-# 
-
-# acho q uma ideia eh zerar a classe ignored nesses pixeis! ou substituir por 
-# valores que deem zero
+for(j in 1:5){
+  
+  other_non_disagg[[j]][other_non_disagg[[j]]<0] <- 0
+}
 
 
+dir.create(file.path(path_res,"other"))
 
-
-
+writeRaster(x = other_non_disagg ,filename = file.path(path_res,"other",paste0(scen_subset[1],"_other.tif")),overwrite=T)
