@@ -1,6 +1,6 @@
 
 library(raster)
-library(terra)
+
 
 # defining path
 
@@ -40,13 +40,13 @@ dir.create(p3)
 
 
 # reclassify to forest = 3
+# testando com matriz de 2 colunar
 
-m_f <- c(0, 2, 0,2,3,1,3,9,0)
+m_f <- c(-1, 2, 0,2,3,1,3,9,0)
 
 rclmat_f <- matrix(m_f, ncol=3, byrow=TRUE)
 
 forest <- reclassify(dominant_land, rclmat_f)
-
 
 
 writeRaster(forest,filename = file.path(p3,"forest_ESA_CCI_2015.tif"),
@@ -65,7 +65,7 @@ shrubland <- reclassify(dominant_land, rclmat)
 writeRaster(shrubland,filename = file.path(p3,"shrubland_ESA_CCI_2015.tif"),
             overwrite=T)
 
-# reclassify to wetlands
+# reclassify to wetlands (5)
 
 m_wet <- c(0, 4, 0,4,5,1,5,9,0)
 
@@ -76,9 +76,9 @@ wetland <- reclassify(dominant_land, rclmat_wet)
 writeRaster(wetland,filename = file.path(p3,"wetland_ESA_CCI_2015.tif"),
             overwrite=T)
 
-# reclassify to deserts
+# reclassify to deserts (6)
 
-m_des <- c(0, 5, 0,5,6,1,6,9,0)
+m_des <- c(0, 5, 0,5,6,1,6,9,0) 
 
 rclmat_des <- matrix(m_des, ncol=3, byrow=TRUE)
 
@@ -87,7 +87,7 @@ desert <- reclassify(dominant_land, rclmat_des)
 writeRaster(desert,filename = file.path(p3,"desert_ESA_CCI_2015.tif"),
             overwrite=T)
 
-# reclassify to ignored
+# reclassify to ignored (8)
 
 m_ignored <- c(0, 7, 0,7,8,1,8,9,0)
 
@@ -102,7 +102,7 @@ writeRaster(ignored,filename = file.path(p3,"urban_rock_ice_ESA_CCI_2015.tif"),
 
 # reclassify to natural grasslands
 
-m_grass <- c(0, 6, 0,6,7,1,7,9,0)
+m_grass <- c(0, 6, 0,6,7,1,7,9,0) (7)
 
 rclmat_grass <- matrix(m_grass, ncol=3, byrow=TRUE)
 
@@ -119,28 +119,27 @@ writeRaster(grass,filename = file.path(p3,"natural_grasslands_ESA_CCI_2015.tif")
 
 #res_iiasa <- 0.5
 
+p4 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses/agriculture"
 
-other_iiasa <- list.files(file.path(p,"other_7"),full.names = T)
+iiasa <- raster(list.files(p4,full.names = T))
 
 
-scen_iiasa <- stack(other_iiasa[2])
-
-scen_iiasa_proj <- projectRaster(scen_iiasa,crs ="+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs" )
-
-ratio <- res(scen_iiasa_proj)/res(shrubland)
+# scen_iiasa_proj <- projectRaster(scen_iiasa,crs ="+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs" )
+# 
+# ratio <- res(scen_iiasa_proj)/res(shrubland)
 
 # listing raster files 
 
 lu <- list.files(p3,full.names = T)
-
+names <- tools::file_path_sans_ext(list.files(p3))
 
 dir.create("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/dominant_use_fraction")
 
-p4 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/dominant_use_fraction"
+p5 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/dominant_use_fraction"
 
-types <- c("desert","natural_grasslands","shrubland","urban_rock_ice","wetland","forest")
+#types <- c("desert","natural_grasslands","shrubland","urban_rock_ice","wetland","forest")
 
-i=6
+i=1
 
 for(i in 1:length(lu))  {
   
@@ -154,21 +153,24 @@ for(i in 1:length(lu))  {
   
   # ressampe
   
-  dominant_land_fraction <- resample(r,scen_iiasa_proj)
+  dominant_land_fraction <- raster::resample(x = r,y = iiasa,method="bilinear")
   
   # save to new folder
   
-  writeRaster(dominant_land_fraction,filename = file.path(p4,paste0(types[i],
-            "_dominant_landuse_fraction_2015_05res.tif")),overwrite=T)
+  writeRaster(dominant_land_fraction,filename = file.path(p5,paste0(names[i],
+            "_dominant_landuse_fraction_05res.tif")),overwrite=T)
   
 }
 
 
 # teste de soma 1
 
-check_sum <- lapply(list.files(p4,full.names = T),stack)
+# agora ta dando ok
+
+check_sum <- lapply(list.files(p5,full.names = T),raster)
 
 check_sum_2 <- Reduce("+",check_sum)
 
+summary(check_sum_2[])
 
-
+plot(check_sum_2<1)
