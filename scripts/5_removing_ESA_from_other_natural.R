@@ -22,11 +22,11 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
 ## frictions and reconfigurations + C_BTC: TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2
 ## baseline_TRADE + IAP_BTC: TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2
 
-scen_to_keep <- c("TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2",
+scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
                   "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2")
+                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
+                  "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
 
 # 5 scenarios
 
@@ -34,7 +34,7 @@ scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value =
 
 # excluir o cenario piloto
 
-scen_to_keep <- scen_to_keep[-4]
+scen_to_keep <- scen_to_keep[-1]
 
 scen_subset <- scen_subset[-1]
 
@@ -52,14 +52,13 @@ esa_rasters = lapply(esa_raster_file_paths_nat, raster)
 
 esa_sum = Reduce('+', esa_rasters)
 
-# Reamostrando ESA natural
+# projetando 
 
-### OBS !!!!!!!!! ##############################################
+# raster com res correta (pode ser qqer um ja reprojetado)
 
-# other_nat_ssp2 eh gerado no loop, tem q substituir essa parte!
+ref <- raster(list.files(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses",scen_to_keep[i],"agriculture"),full.names = T))
 
-################################################################
-esa_nat_res = lapply(esa_rasters, function(r){raster::resample(x = r, y = other_nat_ssp2)})
+esa_nat_res = lapply(esa_rasters, function(r){raster::resample(x = r, y = ref)})
 
 # Removendo negativos
 
@@ -69,10 +68,23 @@ for (r in 1:length(esa_nat_res)) {
 
   }
 
+# salvando pra usar outras vezes!
 
-files = gsub("(ESA_landuse_300m_1992_)(.*)(_media.*$)", "\\2", unlist(lapply(esa_nat_res, names)))
+dir.create(file.path("/dados/projetos_andamento/TRADEhub","ESA_CCI_1992_original"))
 
-files[6] =  "grassland"
+save_esa <- paste(c("desert","forest","ice","shrubland","wetlands","NatGrass"))
+
+for(n in 1:length(esa_nat_res)){
+
+  writeRaster(esa_nat_res[[n]],file.path("/dados/projetos_andamento/TRADEhub","ESA_CCI_1992_original",paste0("ESA_landuse_1992_",save_esa[n],"_IIASApj_Molweide.tif")))
+
+  }
+
+# esa_nat_res <- lapply(list.files("/dados/projetos_andamento/TRADEhub/ESA_CCI_1992_original",full.names = T),raster)
+
+files = gsub("(ESA_landuse_1992_)(.*)(_IIASApj.*$)", "\\2", unlist(lapply(esa_nat_res, names)))
+
+files[4] =  "grassland"
 
 
 for (i in 1:length(scen_subset)){
@@ -98,7 +110,6 @@ for (i in 1:length(scen_subset)){
   
   dir.create(dir)
   
-  scen_subset
   
   for(r in 1:length(other_nat_ssp2_mult)){
     save.path <- file.path(dir, paste0(scen_subset[i],"_",files[r], "_other.tif"))

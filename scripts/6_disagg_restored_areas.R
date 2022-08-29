@@ -26,11 +26,18 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
 ## frictions and reconfigurations + C_BTC: TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2
 ## baseline_TRADE + IAP_BTC: TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2
 
-scen_to_keep <- c("TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2",
+################################################################################
+
+# *** checar se o vetor scen_to_keep e scen_subset estão na mesma ordem! ******
+
+################################################################################
+
+
+scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
                   "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2")
+                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
+                  "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
 
 # 5 scenarios
 
@@ -38,10 +45,9 @@ scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value =
 
 # excluir o cenario piloto
 
-scen_to_keep <- scen_to_keep[-4]
+scen_to_keep <- scen_to_keep[-1]
 
 scen_subset <- scen_subset[-1]
-
 
 
 p2 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/dominant_use_fraction"
@@ -53,28 +59,13 @@ natural_mask <- list.files(path = p2,full.names = T)
 usos <- c("desert","forest","natural_grasslands","shrubland","rock_ice","wetland")
 
 # ESA 1992
-esa_raster_file_paths = list.files("/dados/rawdata/land-use/past/", full.names = T)
 
-# usos naturais
-
-esa_raster_file_paths_nat <- grep(esa_raster_file_paths,pattern = paste(c("desert","forest","ice","shrubland","wetlands","NatGrass"),collapse = "|"),value = T)
-
-esa_rasters = lapply(esa_raster_file_paths_nat, raster)
-
-# Reamostrando ESA natural (aqui tb tem q ajustar o raster de referencia, pq ele so abre dentro do loop)
-
-esa_nat_res = lapply(esa_rasters, function(x){raster::resample(x = x, y = r)})
-
-# Removendo negativos
-
-for (z in 1:length(esa_nat_res)) {
-  esa_nat_res[[z]][esa_nat_res[[z]] < 0] = 0
-}
+esa_nat_res <- lapply(list.files("/dados/projetos_andamento/TRADEhub/ESA_CCI_1992_original",full.names = T),raster)
 
 
-files = gsub("(ESA_landuse_300m_1992_)(.*)(_media.*$)", "\\2", unlist(lapply(esa_nat_res, names)))
+files = gsub("(ESA_landuse_1992_)(.*)(_IIASApj.*$)", "\\2", unlist(lapply(esa_nat_res, names)))
 
-files[6] =  "grassland"
+files[4] =  "grassland"
 
 
 for(i in 1:length(scen_subset)){
@@ -82,7 +73,7 @@ for(i in 1:length(scen_subset)){
 
   p3 <- file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses",scen_to_keep[i],"restored")
   
-  # scenarios with restored classes disaggregated
+  # restored class aggregated
   
   restored_uses <-  list.files(path = p3,full.names = T)
   
@@ -94,8 +85,7 @@ for(i in 1:length(scen_subset)){
 
 
   # # other natural lands
-  # 
-  # p5 <- file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses",scen_to_keep[i],"other")
+  
   r <- stack(restored_uses)
   # loop to mask using different natural formations!
   for(j in 1:length(natural_mask)){

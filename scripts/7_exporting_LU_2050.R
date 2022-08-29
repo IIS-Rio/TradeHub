@@ -19,11 +19,18 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
 ## frictions and reconfigurations + C_BTC: TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2
 ## baseline_TRADE + IAP_BTC: TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2
 
-scen_to_keep <- c("TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2",
+################################################################################
+
+# *** checar se o vetor scen_to_keep e scen_subset estão na mesma ordem! ******
+
+################################################################################
+
+
+scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
                   "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2")
+                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
+                  "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
 
 # 5 scenarios
 
@@ -31,7 +38,7 @@ scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value =
 
 # excluir o cenario piloto
 
-scen_to_keep <- scen_to_keep[-4]
+scen_to_keep <- scen_to_keep[-1]
 
 scen_subset <- scen_subset[-1]
 
@@ -43,7 +50,6 @@ dir.create(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea","lan
 
 # exportando lu finais
 
-#seq(1,length(scen_subset),1
 
 for (i in 1:length(scen_subset))  {
     

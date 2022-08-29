@@ -28,24 +28,31 @@ rest <- list.files(path = p,pattern = "restored*",recursive = T,full.names = T)
 scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
              list.files(file.path(p,"abn_cropland_2Gbioen_10"),pattern = "55"))
 
-# 4 ja foi, faltam os outros!
 
-scen_to_keep <- c("TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2",
+
+################################################################################
+
+# *** checar se o vetor scen_to_keep e scen_subset estão na mesma ordem! ******
+
+################################################################################
+
+
+scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
                   "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2")
+                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
+                  "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
 
-# excluir o 4 que ja foi
-scen_to_keep <- scen_to_keep[-4]
 
 # 5 scenarios
 
 scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )
 
 # exclude i=1 (ja rodei tudo como piloto)
-
 scen_subset <- scen_subset[-1]
+# excluir o 4 que ja foi
+scen_to_keep <- scen_to_keep[-1]
+
 
 # folder to save the results
 

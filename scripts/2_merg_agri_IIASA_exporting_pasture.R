@@ -25,11 +25,19 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
         list.files(file.path(p,"abn_cropland_2Gbioen_10"),pattern = "55"))
 
 
-scen_to_keep <- c("TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2",
+################################################################################
+
+# *** checar se o vetor scen_to_keep e scen_subset estão na mesma ordem! ******
+
+################################################################################
+
+
+scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
                   "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2")
+                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
+                  "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
+
 
 # 5 scenarios
 
@@ -37,7 +45,7 @@ scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value =
 
 # como ja terminei o cen "TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" exclui ele do loop
 
-scen_to_keep <- scen_to_keep[-4]
+scen_to_keep <- scen_to_keep[-1]
 
 scen_subset <- scen_subset[-1]
 
@@ -80,7 +88,7 @@ for(i in 1:length(scen_subset)){
   
   # inicio do loop
   
-  pasture_sub <- grep(pasture,pattern = scen_subset[i],value = T) # here I can replace with an index
+  pasture_sub <- grep(pasture,pattern = scen_subset[i],value = T) 
   
   # opening rasters
   
