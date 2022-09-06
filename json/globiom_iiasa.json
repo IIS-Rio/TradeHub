@@ -12,11 +12,11 @@
 	"io": {
 	  "plangea_path": "/dados/pessoal/luga/dev/plangea-pkg",
 	  "base_path": "dados/projetos_andamento/TRADEhub/trade_hub_plangea/globiom_iiasa_test1/",
-		"rawdata_path": "/dadosprojetos_andamento/TRADEhub/trade_hub_plangea/rawdata/",
-		"lu_relative_path": "land-use-2050/",
+		"rawdata_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/",
+		"lu_relative_path": "land-use/",
 		"past_lu_relative_path": "",
 		"ecoregions_relative_path": "",
-		"future_lu_relative_path": "",
+		"future_lu_relative_path": "land-use-2050/",
 		"pa_relative_path": "",
 		"variables_relative_path": "variables/",
 		"species_relative_path": "species/",
@@ -32,7 +32,7 @@
 	"landscape_features": {
 	  "land_use":{
 	    "class_names": ["AGR", "DES", "FOR", "GRA", "ICE", "IGN", "OTR", "OTN", "PAS", "SHR", "URB", "WET"],
-	  	"class_types": ["A", "N", "N", "N", "I", "I", "N", "N", "A", "N", "I", "N"],
+	  	"class_types": [  "A",   "N",   "N",   "N",   "I",   "I",   "N",   "N",   "A",   "N",   "I",   "N"],
 	  	"classes_raster_names":
 	  	["agriculture.tif",
 	  	"desert.tif",
@@ -71,45 +71,45 @@
 
 // VARIABLES IN THE OBJECTIVE FUNCTION -----------------------------------------
 	"variables": {
-		"variable_names": ["cb", "bd", "oc", "it", "ec"],
-		"variable_types": ["B", "B", "C", "B", "B"],
-		"variable_values": ["C", "C", "C", "C", "C"], // C for continuous, D for discrete, L for logical
-		"variable_weights": [1, 1, 1, 1, 1],
+		"variable_names": ["cb", "it", "ec", "bd", "oc"],
+		"variable_types": [ "B",  "B",  "B",  "B",  "C"],
+		"variable_values": ["C",  "C",  "C",  "C",  "C"], // C for continuous, D for discrete, L for logical
+		"variable_weights": [ 1,    1,    1,    1,    1],
 		"variable_scaling_factors": ["", "", "", "", ""],
-		"ready_variables": [false, false, false, false, true],
+		"ready_variables": [true, false, false, false, true],
 		"ready_variables_raster_names": [
+		  "carbon_cons.tif",
 		  "",
 		  "",
 		  "",
-		  "",
-		  "ec.tif"
+		  "opportunity_cost_cons.tif"
 		  ],
     "refresh_variables_script_names": [
       "",
       "",
+      "multi_calc_ec.R",
       "",
-      "",
-      "multi_calc_ec.R"
+      ""
       ],
     "refresh_variables_function_call": [
 		  "",
 		  "",
+		  ["multi_calc_ec", "cfg", 0.25, "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/variables/ecoregions_2017_1000m_moll_resampled_50km.tif"],
 		  "",
-		  "",
-		  ["multi_calc_ec", "cfg", 0.25, "/dados/rawdata/subregions/ecoregions2017_moll_5km_all_classes_mosaic.tif"]
+		  ""
 		],
 		"aggregated_values_script_names":[
       "",
       "",
-      "",
       "multi_ec_aggregate.R",
+      "",
       ""
       ],
     "aggregated_values_function_call": [
 		  "",
 		  "",
-		  "",
 		  ["multi_ec_aggregate", "x_vals", "cfg", 0.25],
+		  "",
 		  ""
 		],
 
@@ -132,9 +132,9 @@
 
 		"calc_it": {
       "it_variable_name": "it",
-      "hfi": "",
+      "hfi": "hfi_2050_ssp2_resampled.tif",
       "hfi_post": "",
-      "hfi_classes": ["AGR", "CGR"],
+      "hfi_classes": ["AGR", "PAS"],
       "hfi_weights": [4, 7],
       "n_pixels" : 3, // number of pixels considered in move window algorithm
       // Parameters in the Beyer et. al equation for computing IT (leaving null will use default values)
@@ -285,9 +285,21 @@
 	     "use_future_scenario": true,
 	     "make_cumulative_table": false,
 	     "future_land_use": {
-	       "class_names": ["FOR", "NGR", "SHR", "DES", "WET", "AGR", "CGR", "IGN"],
-	       "class_types": ["N", "N", "N", "N", "N", "A", "A", "I"],
-	       "classes_raster_names": ["floresta_futuro.tif", "nat_grass_futuro.tif", "shrubland_futuro.tif", "desert_futuro.tif", "wetland_futuro.tif", "crop_futuro.tif", "pastegem_futuro.tif", "urbano_agua_gelo_futuro.tif"]
+         "class_names": ["AGR", "DES", "FOR", "GRA", "ICE", "IGN", "OTR", "OTN", "PAS", "SHR", "URB", "WET"],
+	  	   "class_types": ["A", "N", "N", "N", "I", "I", "N", "N", "A", "N", "I", "N"],
+	       "classes_raster_names":
+	       ["agriculture.tif",
+        	"desert.tif",
+        	"forest.tif",
+        	"grassland.tif",
+        	"ice.tif",
+        	"ignored.tif",
+        	"km_other_restored.tif",
+        	"other_natland.tif",
+        	"pasture.tif",
+        	"shrubland.tif",
+        	"urban.tif",
+        	"wetland.tif"]
 	     }
 	  },
 
