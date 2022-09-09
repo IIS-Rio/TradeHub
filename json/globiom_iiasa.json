@@ -10,8 +10,8 @@
 
 // INPUT-OUTPUT ----------------------------------------------------------------
 	"io": {
-	  "plangea_path": "/dados/pessoal/luga/dev/plangea-pkg",
-	  "base_path": "dados/projetos_andamento/TRADEhub/trade_hub_plangea/globiom_iiasa_test1/",
+	  "plangea_path": "/dados/pessoal/luga/dev/plangea-pkg/",
+	  "base_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/globiom_iiasa_test2/",
 		"rawdata_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/",
 		"lu_relative_path": "land-use/",
 		"past_lu_relative_path": "",
@@ -31,7 +31,7 @@
 // LANDSCAPE FEATURES ----------------------------------------------------------
 	"landscape_features": {
 	  "land_use":{
-	    "class_names": ["AGR", "DES", "FOR", "GRA", "ICE", "IGN", "OTR", "OTN", "PAS", "SHR", "URB", "WET"],
+	    "class_names": ["AGR", "DES", "FOR", "NGR", "ICE", "IGN", "OTR", "OTN", "PAS", "SHR", "URB", "WET"],
 	  	"class_types": [  "A",   "N",   "N",   "N",   "I",   "I",   "N",   "N",   "A",   "N",   "I",   "N"],
 	  	"classes_raster_names":
 	  	["agriculture.tif",
@@ -78,11 +78,11 @@
 		"variable_scaling_factors": ["", "", "", "", ""],
 		"ready_variables": [true, false, false, false, true],
 		"ready_variables_raster_names": [
-		  "carbon_cons.tif",
+		  "CBD-carbon_layer_updated_reproj.tif",
 		  "",
 		  "",
 		  "",
-		  "opportunity_cost_cons.tif"
+		  "CBD-opportunity_cost_reproj.tif"
 		  ],
     "refresh_variables_script_names": [
       "",
@@ -119,7 +119,7 @@
 		},
 
 		"calc_oc": {
-		  "oc_variable_name": "oc",
+		  "oc_variable_name": "",
 		  "oc_files": ["", ""],
 		  "oc_names": ["", ""],
 		  "corresponding_lu_classes": ["", ""],
@@ -133,7 +133,7 @@
 		"calc_it": {
       "it_variable_name": "it",
       "hfi": "hfi_2050_ssp2_resampled.tif",
-      "hfi_post": "",
+      "hfi_post": "hfi_2050_ssp2_resampled.tif",
       "hfi_classes": ["AGR", "PAS"],
       "hfi_weights": [4, 7],
       "n_pixels" : 3, // number of pixels considered in move window algorithm
@@ -149,11 +149,11 @@
 
 		"calc_bd": {
 		  "bd_variable_name": "bd",
-		  "bd_classes": "",
-		  "bd_subfolders": "",
-		  "threads_harmonize": 1,
+		  "bd_classes": ["A", "B", "M", "R"],
+		  "bd_subfolders": ["amphibians", "birds", "mammals", "reptiles"],
+		  "threads_harmonize": 60,
 		  "spp_table": {
-		    "spp_filename": "",
+		    "spp_filename": "habitat_table_marginal_excluded_ok.csv",
 		    "spp_names_column": "taxonid",
 		    "lu_names_column": "habitat_class",
 		    "include_absent_spp": true,
@@ -181,12 +181,11 @@
 		}
 	},
 
-
 // VARIABLE UNCERTAINTIES ------------------------------------------------------
   "uncertainties":{ // in all quantities under uncertainties, add one entry for each variable
-    "quadratic_propagation": [true, true, true, true, true, true],
-    "confidence_level": [true, true, true, true, true, true],
-  	"ready_uncertainties": [false, false, false, false, false],
+    "quadratic_propagation": [true, true, true, true, true],
+    "confidence_level": [true, true, true, true, true],
+  	"ready_uncertainties": [false, false, false, false],
 		"ready_uncertainties_raster_names": [
 		  "",
 		  "",
@@ -197,17 +196,16 @@
 		"missing_uncertainties_adhoc_threshold": 0.1
   },
 
-
 // SCENARIOS -------------------------------------------------------------------
 	"scenarios": {
 	  "use_gurobi_solver": false,
 	  "rescale_ben": true,
 	  "use_threads": false,
-		"problem_type": "",
-		"benchmark_scenarios": ["cb", "oc", "bd", ["cb", "oc"], ["cb", "bd"], ["cb", "bd", "oc"]],
-		"refresh_nsteps_per_benchmark": [1, 1, 10, 1, 10, 10],
-		"tradeoff_curve_percent_step_size": 0.25,
-		"tradeoff_curve_percent_nstep_range": [1, 4],
+		"problem_type": ["R", "D"],
+		"benchmark_scenarios": ["ec"],
+		"refresh_nsteps_per_benchmark": [1],
+		"tradeoff_curve_percent_step_size": 1,
+		"tradeoff_curve_percent_nstep_range": [1, 1],
 		"include_random_scenario": false,
 		"include_uniform_scenario": false
 	},
@@ -215,7 +213,7 @@
 
 // SUBREGIONS -----------------------------------------------------------------
 	"subregions": {
-	  "include_subregion_scenarios": true,
+	  "include_subregion_scenarios": false,
 	  "subregion_zoning_names": ["states", "ecoregions"],
 	  "subregion_relative_paths": ["subregions/", "land-use/ecoregions/"],
 	  "subregion_raster_names": ["states-code.tif", "Ecoregions_reclassificado.tif"],
@@ -229,17 +227,17 @@
 // TARGETS ---------------------------------------------------------------------
 	"targets": {
 	  // WHOLE-LANDSCAPE TARGETS
-    "landscape_target_names": ["CBD", "MAXOC"],
-		"landscape_target_values": ["6.3E6", "1E9"],
-		"landscape_target_types": ["area", "oc"],
-		"landscape_target_senses": ["<=", "<="],
+    "landscape_target_names": ["WORLD"],
+		"landscape_target_values": [""],
+		"landscape_target_types": ["area"],
+		"landscape_target_senses": ["<="],
 		// SUBREGION FLAT TARGETS (one entry here per entry in subregion_zoning_names)
 		"subregion_flat_targets": [false, false],
     "subregion_flat_target_limits": [0.5, ""],
     "subregion_flat_target_types": ["area", ""],
     "subregion_flat_target_senses": ["<=", "<="],
 		// SUBREGION USER DEFINED (one entry here per entry in subregion_zoning_names)
-		"subregion_user_defined_targets": [true, true],
+		"subregion_user_defined_targets": [false, false],
 		"subregion_user_defined_target_types": ["area", "area"],
 		"subregion_user_defined_tables": [
 		  "restoration-constraints-per-states-modified.csv",
@@ -267,9 +265,9 @@
 
 // BOUNDS ----------------------------------------------------------------------
 	"bound_limits": {
-	  "constant_values": [0.5, 1],
-	  "spatial-modifier_rasters": ["gap_agr_test.tif", "gap_grs_test.tif"],
-	  "spatial-modifier_classes": ["AGR", "CGR"]
+	  "constant_values": [1],
+	  "spatial-modifier_rasters": [""],
+	  "spatial-modifier_classes": [""]
 	  },
 
 
@@ -285,8 +283,8 @@
 	     "use_future_scenario": true,
 	     "make_cumulative_table": false,
 	     "future_land_use": {
-         "class_names": ["AGR", "DES", "FOR", "GRA", "ICE", "IGN", "OTR", "OTN", "PAS", "SHR", "URB", "WET"],
-	  	   "class_types": ["A", "N", "N", "N", "I", "I", "N", "N", "A", "N", "I", "N"],
+         "class_names": ["AGR", "DES", "FOR", "NGR", "ICE", "IGN", "OTR", "OTN", "PAS", "SHR", "URB", "WET"],
+	  	   "class_types": [  "A",   "N",   "N",   "N",   "I",   "I",   "N",   "N",   "A",   "N",   "I",   "N"],
 	       "classes_raster_names":
 	       ["agriculture.tif",
         	"desert.tif",
@@ -304,27 +302,27 @@
 	  },
 
 	  "scenarios_maps": {
-	    "run_module": true
+	    "run_module": false
 	  },
 
 	  "species_table": {
-	    "run_module": true
+	    "run_module": false
 	  },
 
 	  "it_table": {
-	    "run_module": true,
+	    "run_module": false,
 	    "use_cumulative_tbl": false
 	  },
 
 	  "gradient_maps": {
-	    "run_module": true,
+	    "run_module": false,
 	    "gradient_colors": ["#E8384F", "#FD817D", "#FDAE33", "#EECC16", "#A4C61A", "#62BB35", "#37A862", "#208EA3", "#4178BC"],
 	    "threshold": 0,
 	    "stand": false,
 	    "png": true
 	  },
     "habitat_tables": {
-      "run_module": true,
+      "run_module": false,
       "use_all_scenarios": false,
       "include_targets": ["WRLD", "CBD"],
       "include_bounds_limits": [0.5, 1],
@@ -334,7 +332,7 @@
       "subregion_combinations": [["states", ""], ""]
 	  },
 	  "weight_graphics": {
-	    "run_module": true,
+	    "run_module": false,
 	    "use_cumulative_tbl": false,
 	    "w_colors": ["#E8384F", "#FD817D", "#FDAE33", "#EECC16", "#A4C61A", "#62BB35", "#37A862", "#208EA3", "#4178BC"],
 	    "plot": true,
@@ -350,14 +348,14 @@
 	  },
 
 	  "variable_tradeoff":{
-	    "run_module": true,
+	    "run_module": false,
 	    "variables": ["cb", "bd", "oc", "it", "ec"],
 	    "use_cumulative_tbl": false,
 	    "colors": ["#E8384F", "#FD817D", "#FDAE33", "#EECC16", "#A4C61A", "#62BB35", "#37A862", "#208EA3", "#4178BC"]
 	  },
 
 	  "subregion_aggregate_tables": {
-	    "run_module": true,
+	    "run_module": false,
 	    "use_all_scenarios": false,
 	    "include_lu_cols": true,
       "include_targets": ["WRLD", "CBD"],
@@ -369,7 +367,7 @@
 	  },
 
 	  "radar_chart": {
-	    "run_module": true,
+	    "run_module": false,
 	    "variables": ["cb", "bd", "oc", "it", "ec"],
 	    "zero_min_vals": true,
 	    "use_cumulative_tbl": false,
@@ -387,7 +385,7 @@
 	  },
 
       "land_use": {
-      "run_module": true,
+      "run_module": false,
       "use_all_scenarios": false,
       "include_targets": ["WRLD", "CBD"],
       "include_bounds_limits": [0.5, 1],
@@ -398,7 +396,7 @@
       },
 
 	  "report": {
-	    "run_module": true
+	    "run_module": false
     }
 	}
 }
