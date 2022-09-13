@@ -1,9 +1,40 @@
 # Simplificando LULC TradeHub
 library(terra)
 
+library(raster)
+
+# defining path
+
+p <- "/dados/projetos_andamento/TRADEhub/GLOBIOM/atualizacao/scen_desagregados"
+
+
+# list of scenarios (20 in total)
+
+scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
+             list.files(file.path(p,"abn_cropland_2Gbioen_10"),pattern = "55"))
+
+scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
+                  "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
+                  "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
+
+# 5 scenarios
+
+scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )
+
+# # excluir o cenario piloto
+# 
+# scen_to_keep <- scen_to_keep[c(-1,-4)]
+# 
+# scen_subset <- scen_subset[c(-1,-4)]
+
+
+# falta criar um loop, mas o i indexa o cenario escolhido.
+
 # 2050 -------------------------------------------------------------------------
 
-lu_orig = list.files(path = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses_2050/TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2/", pattern = ".tif$", full.names = T)
+lu_orig = list.files(path = paste0("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses_2050/",scen_to_keep[i]), pattern = ".tif$", full.names = T)
 
 #sum(rast(lu_orig))
 
@@ -14,14 +45,16 @@ for (class in lulc_classes) {
   #print(class)
   #print(lulc_rasters)
   sum_class = sum(rast(lulc_rasters))
-  terra::writeRaster(sum_class, paste0("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-2050/", class, ".tif"), overwrite = T)
+  terra::writeRaster(sum_class, paste0("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-2050/",scen_to_keep[i], "/",class, ".tif"), overwrite = T)
   #lu_orig = lu_orig[-lulc_rasters]
 }
 
 # Teste soma 1
-sum_lu_novo = sum(rast(list.files("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-2050/", full.names = T)))
+sum_lu_novo = sum(rast(list.files(paste0("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-2050/",scen_to_keep[i]), full.names = T)))
 
 # 2020 -------------------------------------------------------------------------
+
+# projecao baseline pra 2020
 
 lu_orig = list.files(path = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses_2020/TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2/", pattern = ".tif$", full.names = T)
 
