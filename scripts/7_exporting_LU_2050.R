@@ -10,6 +10,9 @@ p <- "/dados/projetos_andamento/TRADEhub/GLOBIOM/atualizacao/scen_desagregados"
 scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
              list.files(file.path(p,"abn_cropland_2Gbioen_10"),pattern = "55"))
 
+# OBS: mudei o lu pra 2020, pra poder rodar o plangea comparando futuro com presente
+
+
 
 # selecting 5 priority scenarios
 
@@ -38,14 +41,21 @@ scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value =
 
 # excluir o cenario piloto
 
-scen_to_keep <- scen_to_keep[-1]
+scen_to_keep <- scen_to_keep[c(-1,-4)]
 
-scen_subset <- scen_subset[-1]
+scen_subset <- scen_subset[c(-1,-4)]
 
 
 # criando diretorio pra exportar usos finais
 
+# 2050
 dir.create(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea","land_uses_2050"))
+
+
+
+#2020
+
+dir.create(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea","land_uses_2020"))
 
 
 # exportando lu finais
@@ -79,7 +89,7 @@ for (i in 1:length(scen_subset))  {
   
   for( j in 1:length(l_r)){
     # abrindo raster
-    r <- raster(l_r[j],band=5)
+    r <- raster(l_r[j],band=2)
     # criando diretorio
     #dir.create(file.path(p2,"land_uses_2050",l_r_lu[i]))
     save_path <- file.path(p3,paste0(basename(l_r_names[j]),"_2050.tif"))
@@ -128,15 +138,6 @@ for (i in 1:length(scen_subset))  {
 
   
   }
-
-
-################################################################################
-
-# OBS:
-
-# os cenarios -- com excecao do piloto, estao com soma>1, preciso rever
-
-################################################################################
 
 
 

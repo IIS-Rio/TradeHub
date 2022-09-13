@@ -34,51 +34,54 @@ scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value =
 
 # excluir o cenario piloto
 
-scen_to_keep <- scen_to_keep[-1]
+scen_to_keep <- scen_to_keep[c(-1,-4)]
 
-scen_subset <- scen_subset[-1]
+scen_subset <- scen_subset[c(-1,-4)]
 
 
 # ESA 1992
 esa_raster_file_paths = list.files("/dados/rawdata/land-use/past/", full.names = T)
 
-# usos naturais
+#---- usos naturais  ESA -------------------------------------------------------
 
-esa_raster_file_paths_nat <- grep(esa_raster_file_paths,pattern = paste(c("desert","forest","ice","shrubland","wetlands","NatGrass"),collapse = "|"),value = T)
+# desmarcar essa parte caso precise gerar de novo os usos esa na mesma projecao
+# dos cenarios
 
-esa_rasters = lapply(esa_raster_file_paths_nat, raster)
-
-# Teste soma um
-
-esa_sum = Reduce('+', esa_rasters)
+# esa_raster_file_paths_nat <- grep(esa_raster_file_paths,pattern = paste(c("desert","forest","ice","shrubland","wetlands","NatGrass"),collapse = "|"),value = T)
+# 
+# esa_rasters = lapply(esa_raster_file_paths_nat, raster)
+# 
+# # Teste soma um
+# 
+# esa_sum = Reduce('+', esa_rasters)
 
 # projetando 
 
 # raster com res correta (pode ser qqer um ja reprojetado)
 
-ref <- raster(list.files(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses",scen_to_keep[i],"agriculture"),full.names = T))
-
-esa_nat_res = lapply(esa_rasters, function(r){raster::resample(x = r, y = ref)})
-
-# Removendo negativos
-
-for (r in 1:length(esa_nat_res)) {
-  
-  esa_nat_res[[r]][esa_nat_res[[r]] < 0] = 0
-
-  }
-
-# salvando pra usar outras vezes!
-
-dir.create(file.path("/dados/projetos_andamento/TRADEhub","ESA_CCI_1992_original"))
-
-save_esa <- paste(c("desert","forest","ice","shrubland","wetlands","NatGrass"))
-
-for(n in 1:length(esa_nat_res)){
-
-  writeRaster(esa_nat_res[[n]],file.path("/dados/projetos_andamento/TRADEhub","ESA_CCI_1992_original",paste0("ESA_landuse_1992_",save_esa[n],"_IIASApj_Molweide.tif")))
-
-  }
+# ref <- raster(list.files(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses",scen_to_keep[i],"agriculture"),full.names = T))
+# 
+# esa_nat_res = lapply(esa_rasters, function(r){raster::resample(x = r, y = ref)})
+# 
+# # Removendo negativos
+# 
+# for (r in 1:length(esa_nat_res)) {
+#   
+#   esa_nat_res[[r]][esa_nat_res[[r]] < 0] = 0
+# 
+#   }
+# 
+# # salvando pra usar outras vezes!
+# 
+# dir.create(file.path("/dados/projetos_andamento/TRADEhub","ESA_CCI_1992_original"))
+# 
+# save_esa <- paste(c("desert","forest","ice","shrubland","wetlands","NatGrass"))
+# 
+# for(n in 1:length(esa_nat_res)){
+# 
+#   writeRaster(esa_nat_res[[n]],file.path("/dados/projetos_andamento/TRADEhub","ESA_CCI_1992_original",paste0("ESA_landuse_1992_",save_esa[n],"_IIASApj_Molweide.tif")))
+# 
+#   }
 
 # esa_nat_res <- lapply(list.files("/dados/projetos_andamento/TRADEhub/ESA_CCI_1992_original",full.names = T),raster)
 
