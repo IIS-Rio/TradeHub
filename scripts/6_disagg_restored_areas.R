@@ -45,9 +45,9 @@ scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value =
 
 # excluir o cenario piloto
 
-scen_to_keep <- scen_to_keep[-1]
+scen_to_keep <- scen_to_keep[c(-1,-4)]
 
-scen_subset <- scen_subset[-1]
+scen_subset <- scen_subset[c(-1,-4)]
 
 
 p2 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/dominant_use_fraction"

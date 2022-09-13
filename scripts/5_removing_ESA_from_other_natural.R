@@ -83,7 +83,9 @@ esa_raster_file_paths = list.files("/dados/rawdata/land-use/past/", full.names =
 # 
 #   }
 
-# esa_nat_res <- lapply(list.files("/dados/projetos_andamento/TRADEhub/ESA_CCI_1992_original",full.names = T),raster)
+esa_nat_res <- lapply(list.files("/dados/projetos_andamento/TRADEhub/ESA_CCI_1992_original",full.names = T),raster)
+
+
 
 files = gsub("(ESA_landuse_1992_)(.*)(_IIASApj.*$)", "\\2", unlist(lapply(esa_nat_res, names)))
 
