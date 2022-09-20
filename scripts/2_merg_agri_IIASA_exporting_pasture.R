@@ -79,7 +79,7 @@ for(i in 1:length(scen_subset)){
   
     # saving with scenario name
   
-  writeRaster(x = agriculture_pj,filename =file.path(path_res,"agriculture",paste0(scen_subset[1],"_agriculture.tif")),overwrite=TRUE)
+  writeRaster(x = agriculture_pj,filename =file.path(path_res,"agriculture",paste0(scen_subset[i],"_agriculture.tif")),overwrite=TRUE)
   
   # pastureland
   
