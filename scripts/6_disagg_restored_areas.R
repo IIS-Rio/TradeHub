@@ -43,12 +43,12 @@ scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
 
 scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )
 
-# excluir o cenario piloto
-
-scen_to_keep <- scen_to_keep[c(-1,-4)]
-
-scen_subset <- scen_subset[c(-1,-4)]
-
+# # excluir o cenario piloto
+# 
+# scen_to_keep <- scen_to_keep[c(-1,-4)]
+# 
+# scen_subset <- scen_subset[c(-1,-4)]
+# 
 
 p2 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/dominant_use_fraction"
 

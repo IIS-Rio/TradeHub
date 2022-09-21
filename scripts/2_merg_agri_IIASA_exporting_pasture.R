@@ -45,9 +45,9 @@ scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value =
 
 # como ja terminei o cen "TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" exclui ele do loop
 
-scen_to_keep <- scen_to_keep[c(-1,-4)]
-
-scen_subset <- scen_subset[c(-1,-4)]
+# scen_to_keep <- scen_to_keep[c(-1,-4)]
+# 
+# scen_subset <- scen_subset[c(-1,-4)]
 
 for(i in 1:length(scen_subset)){
 

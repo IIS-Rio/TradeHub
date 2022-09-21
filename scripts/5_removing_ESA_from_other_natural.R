@@ -34,10 +34,10 @@ scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value =
 
 # excluir o cenario piloto
 
-scen_to_keep <- scen_to_keep[c(-1,-4)]
-
-scen_subset <- scen_subset[c(-1,-4)]
-
+# scen_to_keep <- scen_to_keep[c(-1,-4)]
+# 
+# scen_subset <- scen_subset[c(-1,-4)]
+# 
 
 # ESA 1992
 esa_raster_file_paths = list.files("/dados/rawdata/land-use/past/", full.names = T)
@@ -116,9 +116,9 @@ for (i in 1:length(scen_subset)){
   dir.create(dir)
   
   
-  for(r in 1:length(other_nat_ssp2_mult)){
-    save.path <- file.path(dir, paste0(scen_subset[i],"_",files[r], "_other.tif"))
-    writeRaster(other_nat_ssp2_mult[[r]], save.path, overwrite = T)
+  for(x in 1:length(other_nat_ssp2_mult)){
+    save.path <- file.path(dir, paste0(scen_subset[i],"_",files[x], "_other.tif"))
+    writeRaster(other_nat_ssp2_mult[[x]], save.path, overwrite = T)
   }
   
   writeRaster(other_non_disagg, paste0(dir,"/" ,scen_subset[i], "_other_natland.tif" ))

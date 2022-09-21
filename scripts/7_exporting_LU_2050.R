@@ -22,6 +22,8 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
 ## frictions and reconfigurations + C_BTC: TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2
 ## baseline_TRADE + IAP_BTC: TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2
 
+# refazer esse: TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2
+
 ################################################################################
 
 # *** checar se o vetor scen_to_keep e scen_subset estão na mesma ordem! ******
@@ -41,9 +43,9 @@ scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value =
 
 # excluir o cenario piloto
 
-scen_to_keep <- scen_to_keep[c(-1,-4)]
+#scen_to_keep <- scen_to_keep[c(-1,-4)], 3,5
 
-scen_subset <- scen_subset[c(-1,-4)]
+#scen_subset <- scen_subset[c(-1,-4)]
 
 
 # criando diretorio pra exportar usos finais
@@ -89,11 +91,11 @@ for (i in 1:length(scen_subset))  {
   
   for( j in 1:length(l_r)){
     # abrindo raster
-    r <- raster(l_r[j],band=2)
+    r <- raster(l_r[j],band=5) # aqui tem que mudar pra 2020(2) ou 2050!
     # criando diretorio
     #dir.create(file.path(p2,"land_uses_2050",l_r_lu[i]))
     save_path <- file.path(p3,paste0(basename(l_r_names[j]),"_2050.tif"))
-    writeRaster(r,filename = save_path)
+    writeRaster(r,filename = save_path,overwrite=TRUE)
     
   }
   
@@ -132,7 +134,7 @@ for (i in 1:length(scen_subset))  {
   ignored[ignored<0] <- 0
   
   
-  writeRaster(ignored,filename = file.path(p3,paste0(scen_subset[i],"_ignored_2050.tif")))
+  writeRaster(ignored,filename = file.path(p3,paste0(scen_subset[i],"_ignored_2050.tif")),overwrite=TRUE)
   
   print(aviso)
 
