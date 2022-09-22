@@ -18,14 +18,6 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
              list.files(file.path(p,"abn_cropland_2Gbioen_10"),pattern = "55"))
 
 
-# selecting 5 priority scenarios
-
-## baseline_TRADE + baseline_BTC : TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2
-## exacerbated trade liberalization + IAP_BTC: TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2
-## frictions and reconfigurations + baseline_BTC: TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2
-## frictions and reconfigurations + C_BTC: TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2
-## baseline_TRADE + IAP_BTC: TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2
-
 ################################################################################
 
 # *** checar se o vetor scen_to_keep e scen_subset estão na mesma ordem! ******
@@ -33,22 +25,20 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
 ################################################################################
 
 
-scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
-                  "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
-                  "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
+# scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
+#                   "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+#                   "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
+#                   "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+#                   "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
 
-# 5 scenarios
+# cenarios com comercio e baseline conservacao que faltam
+
+
+scen_to_keep <- c("TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                                      "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
 
 scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )
 
-# # excluir o cenario piloto
-# 
-# scen_to_keep <- scen_to_keep[c(-1,-4)]
-# 
-# scen_subset <- scen_subset[c(-1,-4)]
-# 
 
 p2 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/dominant_use_fraction"
 
@@ -101,7 +91,7 @@ for(i in 1:length(scen_subset)){
     
     
   }
-  # atr aqui ok!
+  
   
   restored_sum <- lapply(list.files(p4,full.names = T),stack)
   
@@ -111,6 +101,7 @@ for(i in 1:length(scen_subset)){
   
   
   # Removendo negativos
+  
   for (k in 1:5) {
     diif_restored[[k]][diif_restored[[k]] < 0] = 0
   }
@@ -127,7 +118,6 @@ for(i in 1:length(scen_subset)){
 
 # cruzando areas restauradas nao desagregadas ainda com os original land-uses
 # ESA
-
 
 # Multiplicação do other restored por cada classe natural
 

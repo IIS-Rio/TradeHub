@@ -14,32 +14,23 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
              list.files(file.path(p,"abn_cropland_2Gbioen_10"),pattern = "55"))
 
 
-# selecting 5 priority scenarios
+# scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
+#                   "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+#                   "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
+#                   "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+#                   "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
 
-## baseline_TRADE + baseline_BTC : TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2
-## exacerbated trade liberalization + IAP_BTC: TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2
-## frictions and reconfigurations + baseline_BTC: TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2
-## frictions and reconfigurations + C_BTC: TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2
-## baseline_TRADE + IAP_BTC: TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2
+# cenarios com comercio e baseline conservacao que faltam
 
-scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
-                  "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
-                  "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
 
-# 5 scenarios
+scen_to_keep <- c("TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                                      "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
+
 
 scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )
 
-# excluir o cenario piloto
-
-# scen_to_keep <- scen_to_keep[c(-1,-4)]
-# 
-# scen_subset <- scen_subset[c(-1,-4)]
-# 
-
 # ESA 1992
+
 esa_raster_file_paths = list.files("/dados/rawdata/land-use/past/", full.names = T)
 
 #---- usos naturais  ESA -------------------------------------------------------
@@ -124,3 +115,4 @@ for (i in 1:length(scen_subset)){
   writeRaster(other_non_disagg, paste0(dir,"/" ,scen_subset[i], "_other_natland.tif" ))
 
 }
+p
