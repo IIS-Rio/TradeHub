@@ -200,7 +200,9 @@ lista_todos_relative <- list()
 
 c=1
 
-for(metrica in metricas){
+metricas_sem_oc <- metricas[-5]
+
+for(metrica in metricas_sem_oc){
   
   gfico <- val_l %>%
     filter(metric== metrica)%>%
@@ -227,4 +229,178 @@ for(metrica in metricas){
 
 todos_plots_relative <- ggarrange(plotlist = lista_todos_relative,common.legend = T)
 
-ggsave(filename = "figures/exploratory_Trade_scen.jpeg",width = 25.4,height = 14.288,units = "cm",plot = comercio_plots,bg ="white")
+ggsave(filename = "figures/exploratory_Trade_relative_values_no_oc.jpeg",width = 25.4,height = 14.288,units = "cm",plot = todos_plots_relative,bg ="white")
+
+
+
+write.csv(x = val_l,"output_tables/resultado_cenarios.csv",row.names = F)
+
+
+#-------------------------------------------------------------------------------
+
+# extraindo expansão área agrícola por regiao!
+
+
+keep <- c(1,17:25,28)
+
+df_s <- df %>%
+  select(keep) %>%
+  pivot_longer(cols = 2:10)%>%
+  # nome simplificado dos cenarios
+  left_join(nomes_scen)
+
+
+l <-expression(paste("Agriculture expansion ("~km^2," ) ",sep=""))
+
+expansao_agricola_total <- df_s %>%
+  filter(name== "AGR")%>%
+  # tirando cenarios de conservacao
+  filter(!scenario_name %in% conserv_sub)%>%
+  # tirando BAU
+  #filter(label_scen != "BAU")%>%
+  # adatpando escala
+  mutate(value=value/1000)%>%
+  ggplot( aes(x=label_scen, y=value,fill=label_scen)) + 
+  geom_bar(stat = "identity",position = position_dodge())+
+  #scale_y_continuous(label=scientific_10 ) +
+  theme_classic()+
+  xlab("Scenarios")+
+  ylab(l2)+
+  scale_fill_brewer(palette = "Spectral",name="name")+
+  #geom_hline(yintercept=1, linetype="dashed",color = "darkgray", size=1)+
+  coord_flip()+
+  theme(legend.position = 'bottom', legend.direction = "horizontal",
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+  guides(fill=guide_legend(nrow=2,byrow=TRUE,title = ""))
+
+
+ggsave(filename = "figures/exploratory_Trade_agri_expansion_total.jpeg",width = 25.4,height = 14.288,units = "cm",plot = expansao_agricola_total,bg ="white")
+
+
+write.csv(x = df_s,"output_tables/lu_change_global.csv",row.names = F)
+
+# extracting area expanded per country
+
+
+library(giscoR)
+library(countrycode)
+library(sf)
+
+world <- gisco_get_countries()
+
+plot(st_geometry(world))
+
+# Add the subregion
+
+world$region <- countrycode(world$ISO3_CODE,
+                            origin = "iso3c",
+                            destination = "un.regionsub.name")
+
+
+
+
+
+subworld <- world %>% 
+  group_by(region) %>%
+  # Mock the data field
+  summarise(data=n())
+
+ggplot(subworld) +
+  geom_sf(aes(fill=region))
+
+# open agricultural rasters
+
+p_land_2050 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-2050"
+
+scenarios_full <- grep(pattern = "SSP2",x = list.files(p_land_2050),value = T)
+
+library(raster)
+
+for(s in 1:length(scenarios_full)){
+  
+  scen <- scenarios_full[s]
+  
+  agri <- raster(file.path(p_land_2050,scen,"agriculture.tif"))
+  
+  # calculando area
+  
+  pixel_area <- (50100 * 61800)/10^6
+  
+  # convertendo pra area
+  
+  agri_km2 <- agri*pixel_area
+  
+  area_per_region <- data.frame(scen=extract(x = agri_km2,y = subworld,fun= sum,na.rm=TRUE ))
+  
+  names(area_per_region) <- scen
+  
+  
+  subworld <- cbind(subworld,area_per_region)
+
+}
+
+
+subworld_df <- subworld
+
+nomes_scen2 <- nomes_scen 
+
+nomes_scen2$scenario_name[nomes_scen2$scenario_name=="globiom_iiasa_baseline"] <- "globiom_iiasa_TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2"
+
+
+
+nomes_scen2$scenario_name[nomes_scen2$scenario_name=="globiom_iiasa_TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2_2"] <- "globiom_iiasa_TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2"
+
+nomes_scen2$scenario_name[nomes_scen2$scenario_name=="globiom_iiasa_TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2_2"] <- "globiom_iiasa_TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2"
+
+
+st_geometry(subworld_df) <- NULL
+
+subworld_df_l <- subworld_df%>%
+  pivot_longer(cols = 3:10)%>%
+  mutate(name=paste0("globiom_iiasa_",name))%>%
+  rename(scenario_name=name)%>%
+  left_join(nomes_scen2)
+
+conserv_sub2 <- conserv_sub
+
+conserv_sub2[1:5] <- "globiom_iiasa_TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2"
+
+conserv_sub2[11:15] <- "globiom_iiasa_TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2"
+
+l2 <-expression(paste("Agriculture expansion ("~km^2,"x1000 ) ",sep=""))
+
+
+expansao_agricola_regional <- subworld_df_l %>%
+  #filter(name== "AGR")%>%
+  # tirando cenarios de conservacao
+  filter(!scenario_name %in% conserv_sub2)%>%
+  # tirando BAU
+  #filter(label_scen != "BAU")%>%
+  # filter na
+  filter(!is.na(region))%>%
+  # adaptando escala
+  mutate(value=value/1000)%>%
+  ggplot( aes(x=label_scen, y=value,fill=label_scen)) + 
+  geom_bar(stat = "identity",position = position_dodge())+
+  #scale_y_continuous(label=scientific_10 ) +
+  theme_classic()+
+  xlab("Scenarios")+
+  ylab(l2)+
+  scale_fill_brewer(palette = "Spectral",name="name")+
+  #geom_hline(yintercept=1, linetype="dashed",color = "darkgray", size=1)+
+  coord_flip()+
+  theme(legend.position = 'bottom', legend.direction = "horizontal",
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+  guides(fill=guide_legend(nrow=2,byrow=TRUE,title = ""))+
+  facet_wrap("region")
+
+# globiom_iiasa_TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2
+# globiom_iiasa_TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2
+
+
+write.csv(x = subworld_df_l,"output_tables/agri_expansion_global_regions.csv",row.names = F)
+
+
+ggsave(filename = "figures/exploratory_Trade_agri_expansion_per_region.jpeg",width = 25.4,height = 14.288,units = "cm",plot = expansao_agricola_regional,bg ="white")
