@@ -404,3 +404,175 @@ write.csv(x = subworld_df_l,"output_tables/agri_expansion_global_regions.csv",ro
 
 
 ggsave(filename = "figures/exploratory_Trade_agri_expansion_per_region.jpeg",width = 25.4,height = 14.288,units = "cm",plot = expansao_agricola_regional,bg ="white")
+
+#----------------------------------------------------------
+
+# extrair metricas por pais pra ver se faz sentido alguma relacao entre expansao agricola e uma dada metrica
+
+# acho q da pra somar!
+
+# piloto com bd
+
+metrica <- c("bd","ec","it")
+
+# isso aqui ta errado, deu tudo igual! as metricas ficam com mesmo valor por pais pra todos os cenarios. sera q eh pq eh input?? deve seR!!
+
+for(i in 1:length(scenarios)) {
+  
+    for(mt in metrica){
+    # caminho pros rasters de metricas
+    m_path <- list.files(path = file.path(p,scenarios[i],"/results/post_processed/input_variables/"),pattern = paste0(mt,".+.tif"),full.names = T)
+    # abrindo raster
+    m <- raster(m_path)
+    # extraindo valor metrica por regiao
+    m_per_region <- data.frame(value=extract(x = m,y = subworld,fun= sum,na.rm=TRUE ))
+    # colocando nome correto
+    names(m_per_region) <- mt
+    
+    # faltou nomear os cenarios
+    
+    # adicionando no shape de regioes
+    subworld <- cbind(subworld,m_per_region)
+    
+    }
+}
+
+
+subworld_df <- subworld
+
+st_geometry(subworld_df) <- NULL
+
+names(subworld_df)[3:26] <- paste0(rep(metrica,3),"_",rep(scenarios,each=3))
+
+subworld_df_l <- pivot_longer(subworld_df,cols =3:26 )
+
+subworld_df_l <- subworld_df_l%>% 
+  separate(name,c("metric","scenario_name"),sep = "_globiom_iiasa_")%>%
+  filter(!is.na(region))
+
+
+# combine with agricultural expansion
+
+library(readr)
+
+agri_expansion_global_regions <- read_csv("/dados/pessoal/francisco/TradeHub/output_tables/agri_expansion_global_regions.csv")
+
+
+# padronizando nomes
+
+# TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2_2
+# TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2_2
+# TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2_2
+
+subworld_df_l$scenario_name <- gsub(pattern = "TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2_2",replacement = "TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",x = subworld_df_l$scenario_name)
+
+subworld_df_l$scenario_name <- gsub(pattern = "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2_2",replacement = "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2",x = subworld_df_l$scenario_name)
+
+subworld_df_l$scenario_name <- gsub(pattern = "baseline",replacement = "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",x = subworld_df_l$scenario_name)
+
+subworld_df_l$scenario_name <- paste0("globiom_iiasa_",subworld_df_l$scenario_name)
+
+
+names(agri_expansion_global_regions)[4] <- "agricultural_expansion"
+
+#names(subworld_df_l)[4] <- "scenario_name"
+
+subworld_df_l_2 <- left_join(subworld_df_l,agri_expansion_global_regions,)
+
+
+write.csv("/dados/pessoal/francisco/TradeHub/output_tables/metrics_agri_exp.csv",row.names = F,x = subworld_df_l_2)
+
+subworld_df_l_2 %>%
+  filter(metric== metrica[1])%>%
+  # tirando cenarios de conservacao
+  filter(!scenario_name %in% conserv_sub)%>%
+  filter(region == "Latin America and the Caribbean")%>%
+  # adatpando escala
+  #mutate(value=value/1000)%>%
+  ggplot( aes(x=value, y=agricultural_expansion,color=label_scen)) + 
+  geom_point()+
+  #scale_y_continuous(label=scientific_10 ) +
+  theme_classic()+
+  #xlab("Scenarios")+
+  #ylab(l2)+
+  scale_color_brewer(palette = "Spectral",name="name")+
+  #geom_hline(yintercept=1, linetype="dashed",color = "darkgray", size=1)+
+  #coord_flip()+
+  theme(legend.position = 'bottom', legend.direction = "horizontal",
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+  guides(fill=guide_legend(nrow=2,byrow=TRUE,title = ""))
+
+for(mt in metrica){
+  
+  print(mt)
+}
+
+list.files(path = file.path(p,scenarios[i],"/results/post_processed/input_variables/"),pattern = paste0(mt,".+.tif"),full.names = T)
+
+# explorar grafico de expansao agricola e metricas, por cenario
+
+p <- "/dados/pessoal/francisco/TradeHub"
+
+library(readr)
+
+resultado_cenarios <- read_csv("/dados/pessoal/francisco/TradeHub/output_tables/resultado_cenarios.csv")
+
+lu_change_global <- read_csv("/dados/pessoal/francisco/TradeHub/output_tables/lu_change_global.csv")
+
+
+names(lu_change_global)[c(3,4)] <- c("LU","land_use_change")
+
+agri_metrics <- left_join(lu_change_global,resultado_cenarios)
+
+
+# not great yet!
+
+# plot metrica x agri
+
+l2 <-expression(paste("Agriculture expansion ("~km^2,"x1000 ) ",sep=""))
+
+metrica <-unique(agri_metrics$metric)[2:4]
+
+metricasxarea <- list()
+c <- 1
+for(m in metrica){
+    df <- agri_metrics %>%
+    # agriculture
+    filter(LU== "AGR")%>%
+    # tirando cenarios de conservacao
+    filter(!scenario_name %in% conserv_sub)%>%
+    # filter(!name == "oc.val")%>%
+    # filter(!name == "cb.val")%>%
+    filter(metric == m)%>%
+    mutate(land_use_change=land_use_change/1000)
+    #filter(region == "Latin America and the Caribbean")%>%
+    # adatpando escala
+    #mutate(value=value/1000)%>%
+  gfco <- ggplot(df , aes(x=land_use_change, y=value,color=label_scen,)) + 
+  geom_point(position = position_dodge(width =100))+
+  #scale_y_continuous(trans=pseudolog10_trans ) +
+  theme_classic()+
+  xlab(l2)+
+  ylab(m)+
+  #scale_color_brewer(palette = "Spectral",name="label_scen")+
+    theme(legend.title = element_blank())
+  
+  metricasxarea[[c]] <- gfco
+  c <- c+1
+# +
+#   theme(legend.position = 'top', legend.direction = "horizontal",
+#         axis.text.y=element_blank(),
+#         axis.ticks.y=element_blank(),legend.title = element_text(""))+
+#   guides(fill=guide_legend(nrow=2,byrow=TRUE,title = ""))+
+ # facet_wrap("name")
+
+}
+
+metrics_area_plot <- ggarrange(plotlist = metricasxarea,common.legend = T)
+
+ggsave(filename = "figures/exploratory_Trade_agrixbio_metrics.jpeg",width = 25.4,height = 14.288,units = "cm",plot = metrics_area_plot,bg ="white")
+
+#----------------------------------------------------------------
+
+# calcular expansao de pastagem e total de habitats naturais em cd cenario (esse pode ser um grafico barra stacked)
