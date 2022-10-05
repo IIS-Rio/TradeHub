@@ -44,23 +44,15 @@ scen_to_keep <- c("TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
                   "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
                   "TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
                   "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                                  "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2"
-                  )
+)
 
 
 scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )
 
-# excluir o cenario piloto
 
-#scen_to_keep <- scen_to_keep[c(-1,-4)], 3,5
-
-#scen_subset <- scen_subset[c(-1,-4)]
 
 
 # criando diretorio pra exportar usos finais
-
-# 2050
-dir.create(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea","land_uses_2050"))
-
 
 
 #2020
@@ -68,13 +60,15 @@ dir.create(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea","lan
 dir.create(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea","land_uses_2020"))
 
 
-# exportando lu finais
+# exportando lu finais(por enquanto so vou exportar o baseline com baseline)
 
+scen_subset <- scen_subset[2]
+scen_to_keep <- scen_to_keep[2]
 
 for (i in 1:length(scen_subset))  {
-    
-    
-    p2 <- file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses",scen_to_keep[i])
+  
+  
+  p2 <- file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/land_uses",scen_to_keep[i])
   
   
   # listando pastas com usos finais (descarta usos agregados que foram desagregados; ex: restored e other)
@@ -85,7 +79,7 @@ for (i in 1:length(scen_subset))  {
   
   # exportando ano 2050
   
-  p3 <- file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea","land_uses_2050",scen_to_keep[i])
+  p3 <- file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea","land_uses_2020",scen_to_keep[i])
   
   # criando diretorio por cenario
   
@@ -94,12 +88,12 @@ for (i in 1:length(scen_subset))  {
   
   for( j in 1:length(l_r)){
     # abrindo raster
-    r <- raster(l_r[j],band=5) # aqui tem que mudar pra 2020(2) ou 2050 (5)!
+    r <- raster(l_r[j],band=2) # aqui tem que mudar pra 2020(2) ou 2050 (5)!
     # criando diretorio
     #dir.create(file.path(p2,"land_uses_2050",l_r_lu[i]))
     # criando vetor com nome do layer
     l_r_names <- str_split(string = l_r[j],pattern =paste(c("land_uses/"),collapse = "|")) [[1]][2]
-    save_path <- file.path(p3,paste0(basename(l_r_names),"_2050.tif"))
+    save_path <- file.path(p3,paste0(basename(l_r_names),"_2020.tif"))
     writeRaster(r,filename = save_path,overwrite=TRUE)
     
   }
@@ -117,12 +111,12 @@ for (i in 1:length(scen_subset))  {
     aviso <- paste("o cenario ",scen_to_keep[i],"tem soma >1")
     
   }else{
-      
-      aviso <- paste("o cenario ",scen_to_keep[i],"esta ok!")
-      
-    }
-      
- 
+    
+    aviso <- paste("o cenario ",scen_to_keep[i],"esta ok!")
+    
+  }
+  
+  
   
   #plot(soma_reduced)
   
@@ -139,12 +133,12 @@ for (i in 1:length(scen_subset))  {
   ignored[ignored<0] <- 0
   
   
-  writeRaster(ignored,filename = file.path(p3,paste0(scen_subset[i],"_ignored_2050.tif")),overwrite=TRUE)
+  writeRaster(ignored,filename = file.path(p3,paste0(scen_subset[i],"_ignored_2020.tif")),overwrite=TRUE)
   
   print(aviso)
-
   
-  }
+  
+}
 
 
 
