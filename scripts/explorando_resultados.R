@@ -244,7 +244,7 @@ write.csv(x = val_l,"output_tables/resultado_cenarios.csv",row.names = F)
 keep <- c(1,17:25,28)
 
 df_s <- df %>%
-  select(keep) %>%
+  dplyr::select(keep) %>%
   pivot_longer(cols = 2:10)%>%
   # nome simplificado dos cenarios
   left_join(nomes_scen)
@@ -550,12 +550,12 @@ for(m in metrica){
     # adatpando escala
     #mutate(value=value/1000)%>%
   gfco <- ggplot(df , aes(x=land_use_change, y=value,color=label_scen,)) + 
-  geom_point(position = position_dodge(width =100))+
+  geom_point(position = position_dodge(width =100),size=4)+
   #scale_y_continuous(trans=pseudolog10_trans ) +
   theme_classic()+
   xlab(l2)+
   ylab(m)+
-  #scale_color_brewer(palette = "Spectral",name="label_scen")+
+  scale_color_brewer(palette = "Spectral",name="label_scen")+
     theme(legend.title = element_blank())
   
   metricasxarea[[c]] <- gfco
@@ -571,8 +571,79 @@ for(m in metrica){
 
 metrics_area_plot <- ggarrange(plotlist = metricasxarea,common.legend = T)
 
+expansao_agricola_total
+
+metricasxarea[[4]] <- expansao_agricola_total
+
+metrics_area_plot2 <- ggarrange(plotlist = metricasxarea,common.legend = T)
+
+
 ggsave(filename = "figures/exploratory_Trade_agrixbio_metrics.jpeg",width = 25.4,height = 14.288,units = "cm",plot = metrics_area_plot,bg ="white")
+
+ggsave(filename = "figures/exploratory_Trade_agrixbio_metric2s.jpeg",width = 25.4,height = 14.288,units = "cm",plot = metrics_area_plot2,bg ="white")
 
 #----------------------------------------------------------------
 
 # calcular expansao de pastagem e total de habitats naturais em cd cenario (esse pode ser um grafico barra stacked)
+
+#----------------------------------------------------------------
+
+# calcular em q regioes o cenario de elim. tarifas teve expansao maior de área
+
+
+agri_expansion_global_regions <- read_csv("output_tables/agri_expansion_global_regions.csv")
+
+l2 <-expression(paste("Agriculture expansion ("~km^2,"x1000 ) ",sep=""))
+
+
+# regioes onde transp. cost eh maior
+
+loop <- unique(expansao_agricola_regional$region)
+
+valores_maximos <- list()
+c <- 1
+for(i in loop)  {
+  df <- expansao_agricola_regional%>%
+  filter(region==i)
+maxval <- df[df$value==max(df$value),] 
+c <- c+1
+valores_maximos[[c]] <- maxval}
+
+valores_maximos_df <- do.call(rbind,valores_maximos)
+
+valores_maximos_df_tarif <- valores_maximos_df[valores_maximos_df$label_scen=="tarif.elim.+BTC baseline",]
+
+#df_s <- df$value[df$]
+
+
+
+
+expansao_agricola_regional_tarif <- agri_expansion_global_regions %>%
+  #filter(name== "AGR")%>%
+  # tirando cenarios de conservacao
+  filter(!scenario_name %in% conserv_sub2)%>%
+  # so lugares q tarif. teve maior expansao
+  filter(region %in% valores_maximos_df_tarif$region )%>%
+  # filter na
+  filter(!is.na(region))%>%
+  filter(value!=0)%>%
+  # adaptando escala
+  mutate(value=value/1000)%>%
+  ggplot( aes(x=label_scen, y=value,fill=label_scen)) + 
+  geom_bar(stat = "identity",position = position_dodge())+
+  #scale_y_continuous(label=scientific_10 ) +
+  theme_classic()+
+  xlab("Scenarios")+
+  ylab(l2)+
+  scale_fill_brewer(palette = "Spectral",name="name")+
+  #geom_hline(yintercept=1, linetype="dashed",color = "darkgray", size=1)+
+  coord_flip()+
+  theme(legend.position = 'bottom', legend.direction = "horizontal",
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+  guides(fill=guide_legend(nrow=2,byrow=TRUE,title = ""))+
+  facet_wrap("region")
+
+
+#----------------------------------------------------------------
+
