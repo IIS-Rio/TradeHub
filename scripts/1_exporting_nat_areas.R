@@ -47,7 +47,7 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
 
 
 scen_to_keep <- c("TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                                      "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
+                  "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                             "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
 
 
 scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )

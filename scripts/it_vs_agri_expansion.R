@@ -1,3 +1,6 @@
+
+#----- pacotes -----------------------------------------------------------------
+
 library(raster)
 library(dplyr)
 library(ggpubr)
@@ -5,6 +8,8 @@ library(viridis)
 library(ggthemes)
 library(forcats)
 library(ggrepel)
+
+#-------------------------------------------------------------------------------
 
 p <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/"
 
@@ -19,7 +24,7 @@ scenarios <- list.files(p,pattern = "globiom_iiasa",recursive = F)
 
 resultados <- list.files(file.path(p,scenarios),pattern = ".csv",recursive = T,full.names = T)
 
-it <- raster(file.path(p,scenarios[1],"results/post_processed/input_variables","it_2022-09-09.tif"))
+it <- raster(file.path(p,scenarios[1],"results/post_processed/input_variables","it_2022-10-05.tif"))
 
 it_df <- as.data.frame(it,xy=TRUE)
 

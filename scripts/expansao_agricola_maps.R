@@ -1,48 +1,17 @@
-# calcular as areas de expansão agricola em cada cenario e plotar sobre os países
+# plotar sobre os países areas de expansao agricola
 
-
-#--- gerando rasters de expansao agrícola -------------------------------------
-
-# rasters area agricola 2050
-
-p_land_2050 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-2050"
-
-# cenarios rodados
-
-scenarios_full <- grep(pattern = "SSP2",x = list.files(p_land_2050,full),value = T)
-
-# cenarios so comercio
-
-scenarios_trade <-  grep(pattern = "NOBIOD_NOTECH_NODEM_SPA0_SSP2",x =  scenarios_full,value = T)
-  
-  
-# cenario BAU (usado pra comparacao de todas as metricas)
-
-for(i in 1:length(scenarios_trade)){
-  baseline_2020 <- raster(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use","agriculture.tif"))
-  
-  
-  scen_2050 <- raster(file.path(p_land_2050,scenarios_trade[i],"agriculture.tif"))
-  
-  # essa eh a diferenca; soh oq for maior que zero eh expansao. Teve tb reducao em alguns locais.
-  
-  dif <- scen_2050 - baseline_2020
-  
-  # SO EXPANSAO
-  
-  expan <-  reclassify(dif, cbind(-1, 0, 0))
-  
-  writeRaster(x = expan,filename = file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/agricultural expansion",paste0(scenarios_trade[i],"_agricultural_expansion.tif")) )
-}
-
-
-#---- plotando por cenário ----------------------------------------------------
+#---- pacotes ------------------------------------------------------------------
 
 library(ggplot2)
 library(ggpubr)
 library(ggthemes)
 library(viridis)
 library(maptools)
+
+
+#---- plotando por cenário ----------------------------------------------------
+
+
 
 p <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/agricultural expansion"
 
@@ -88,17 +57,9 @@ for (i in 1:length(agri_expan_files)){
 
 }
 
-
-maps[[6]] <- l
-
-
-global_maps <- ggarrange(plotlist =  maps,ncol=2,nrow=3)
-
-#ggarrange(global_maps,l,widths = c(5,1),heights = c(5,1))
-
-ggsave(filename = "figures/agri_expansion_Trade_map.jpeg",width = 25.4,height = 14.288,units = "cm",plot = global_maps,bg ="white")
-
-# adicionar figura da expansao agricola total no mapa!
+#-------------------------------------------------------------------------------
+# adicionar figura da expansao agricola total no mapa! usando rasters (fica pior, melhor usar tabela plangea)
+#-------------------------------------------------------------------------------
 
 
 
@@ -129,14 +90,14 @@ expansao_agricola_total <- lu_change_global %>%
 
 # maps2 <- maps[1:5]
 # 
-maps2[[6]] <- expansao_agricola_total
+maps[[6]] <- expansao_agricola_total
 
 
 # reordenando toscamente pra ficar em ordem de expansao
 
-maps3 <- list(maps2[[5]],maps2[[3]],maps2[[4]],maps2[[2]],maps2[[1]],maps2[[6]])
+maps2 <- list(maps[[5]],maps[[3]],maps[[4]],maps[[2]],maps[[1]],maps[[6]])
 
-global_maps2 <- ggarrange(plotlist =  maps3,common.legend = T,ncol=2,nrow=3)
+global_maps2 <- ggarrange(plotlist =  maps2,common.legend = T,ncol=2,nrow=3)
 
 ggsave(filename = "figures/agri_expansion_Trade_map_2.jpeg",width = 25.4,height = 14.288,units = "cm",plot = global_maps2,bg ="white")
 
@@ -145,3 +106,39 @@ ggsave(filename = "figures/agri_expansion_Trade_map_2.jpeg",width = 25.4,height 
 # como interfere nas areas mais sensiveis do BD: agri+pastagem em locais sensíveis!
 
 # olhar tb pro desmatamento nas ecorregioes!
+
+#-------------------------------------------------------------------------------
+
+# usando tabela plangea 
+
+#-------------------------------------------------------------------------------
+
+lu_change <- read_csv("output_tables/resultados_lu_change_cenarios.csv")
+
+lu_change$label_scen <-factor(lu_change$label_scen,levels = rev(c("exacerb. lib. + BTC baseline","transp.cost. red + BTC baseline","tarif.elim.+BTC baseline","BAU","frict.&reconfig. + BTC baseline")))
+
+library(forcats)
+
+expansao_agricola_total_plangea <- lu_change %>%
+  filter(name=="AGR")%>%
+  mutate(value = value/1000)%>%
+  #mutate(name = fct_reorder(scen, value)) %>%
+  ggplot( aes(x=label_scen, y=value)) + 
+  geom_bar(stat = "identity",position = position_dodge(),fill="lightgray")+
+  #scale_y_continuous(label=scientific_10 ) +
+  scale_x_discrete(labels=c("exacerb. lib. + BTC baseline"="exc.lb.","transp.cost. red + BTC baseline"="trsp.cst.rd","tarif.elim.+BTC baseline"="tff.elmtn","BAU"="BAU","frict.&reconfig. + BTC baseline"="frcts.rcfgrts"))+
+  theme_classic()+
+  xlab("")+
+  ylab(l)+
+  #scale_fill_brewer(palette = "Spectral",name="name")+
+  #geom_hline(yintercept=1, linetype="dashed",color = "darkgray", size=1)+
+  coord_flip()
+
+
+maps[[6]] <- expansao_agricola_total_plangea
+
+maps2 <- list(maps[[5]],maps[[3]],maps[[4]],maps[[2]],maps[[1]],maps[[6]])
+
+global_maps2 <- ggarrange(plotlist =  maps2,common.legend = T,ncol=2,nrow=3)
+
+ggsave(filename = "figures/agri_expansion_Trade_map_PLANGEA.jpeg",width = 25.4,height = 14.288,units = "cm",plot = global_maps2,bg ="white")

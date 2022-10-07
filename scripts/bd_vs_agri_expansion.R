@@ -1,5 +1,6 @@
 # levantar expansao agricola (pastagem + agricultura) e cruzar com mapa atual bd
 
+#---- pacotes ------------------------------------------------------------------
 library(raster)
 library(dplyr)
 library(ggpubr)
@@ -8,9 +9,9 @@ library(ggthemes)
 library(forcats)
 library(ggrepel)
 
-p <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/"
+#-------------------------------------------------------------------------------
 
-#"globiom_iiasa_test2/results/post_processed/tables/global"
+p <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/"
 
 # listando pastas
 
@@ -21,7 +22,8 @@ scenarios <- list.files(p,pattern = "globiom_iiasa",recursive = F)
 
 resultados <- list.files(file.path(p,scenarios),pattern = ".csv",recursive = T,full.names = T)
 
-bd <- raster(file.path(p,scenarios[1],"results/post_processed/input_variables","bd_2022-09-09.tif"))
+# abrindo raster bd. sao todos iguais
+bd <- raster(file.path(p,scenarios[1],"results/post_processed/input_variables","bd_2022-10-05.tif"))
 
 bd_df <- as.data.frame(bd,xy=TRUE)
 
@@ -33,8 +35,10 @@ names(bd_df)[3] <- "bd"
 bd_df%>%
   # filter(bd>0)%>%
   # filter(bd<10^(-3))%>%
+  filter(!is.na(bd_log10))%>%
+  mutate(scaled_bd = range01(bd_log10))%>%
   ggplot()+
-  geom_histogram(aes(x=bd_log10))
+  geom_histogram(aes(x=scaled_bd))
 
 # normalizando valores de 0 a 1
 
@@ -50,7 +54,8 @@ bd_map <- bd_df%>%
   ggplot()+
   #geom_polygon(data=wrld_transf, aes(long,lat,group=group), fill="lightgray")+
   geom_raster(aes(x = x,y = y,fill=scaled_bd))+
-  scale_fill_viridis(option="turbo","bd")+
+  #scale_fill_viridis(option="turbo","bd")+
+  scale_fill_viridis_c(limits = c(0, 0.5),option="turbo","bd")+
   #ggtitle(scen[i])+
   theme_map()
 
@@ -63,8 +68,6 @@ bd_map <- bd_df%>%
 bd_cut <- bd %>%
   log10()%>%
   cut(20)/20
-
-
 
 # teria q cruzar classe a classe!
 
@@ -115,23 +118,7 @@ expansao_bd_result$scen <-factor(expansao_bd_result$scen,levels = rev(c("exacerb
 
 l <-expression(paste("Agriculture expansion ("~km^2,"x1000 ) ",sep=""))
 
-expansao_bd_plot <- expansao_bd_result%>%  
-  mutate(area_agricola_1000 = area_agricola/1000) %>%
-  ggplot( aes(fill=bd_class, y=area_agricola_1000, x=scen)) + 
-    geom_bar(position="stack", stat="identity")+
-    scale_fill_viridis(option="turbo","bd")+
-    coord_flip()+
-    theme_classic()+
-    xlab("")+
-    ylab(l)
-  
-final <- ggarrange(bd_map,expansao_bd_plot,common.legend = T,legend="bottom",nrow = 2)
-
-ggsave(filename = "figures/agri_expansion_bd_Trade_map.jpeg",width = 25.4,height = 14.288,units = "cm",plot = final,bg ="white")
-
 # calcular proporcionalmente, ver se tem uma expansao desproporcional em alguma classe! vai dar pra comparar melhor!!
-
-# os valores tao estranhos!
 
 expansao_bd_result2 <- expansao_bd_result%>%  
   mutate(area_agricola_1000 = area_agricola/1000)%>%
@@ -139,9 +126,20 @@ expansao_bd_result2 <- expansao_bd_result%>%
   summarise(area_agricola_1000 = sum(area_agricola_1000)) %>%
   mutate(freq = area_agricola_1000 / sum(area_agricola_1000))
 
-# ta mega errado!! corrigir essa merda!  
 
+# agrupando classes acima de 0.5
+
+expansao_bd_result2$bd_class_rc <- expansao_bd_result2$bd_class
+expansao_bd_result2$bd_class_rc[expansao_bd_result2$bd_class_rc>0.5] <- 0.5
+
+
+expansao_bd_result_rc <- expansao_bd_result2%>%
+  group_by(scen,bd_class_rc)%>%
+  summarise(freq_rc = sum(freq),area_agricola_1000 = sum(area_agricola_1000)) 
+  
 l2 <-"Agriculture expansion (%)"
+
+# sem reclassificacao de grupo
 
 expansao_bd_plot2 <- expansao_bd_result2%>%  
   mutate(perc = paste0(round(freq,2)*100," ","%")) %>%
@@ -159,3 +157,63 @@ expansao_bd_plot2 <- expansao_bd_result2%>%
 final_2 <- ggarrange(bd_map,expansao_bd_plot2,nrow = 2)
 
 ggsave(filename = "figures/agri_expansion_bd_Trade_map.jpeg",width = 25.4,height = 14.288,units = "cm",plot = final_2,bg ="white")
+
+
+# com reclassificacao (fica melhor!!)
+
+expansao_bd_plot_rc <- expansao_bd_result_rc%>%  
+  mutate(perc = paste0(round(freq_rc,2)*100," ","%")) %>%
+  ggplot( aes(fill=bd_class_rc, y=freq_rc, x=scen,label = perc)) + 
+  geom_bar(position="stack", stat="identity")+
+  #geom_text(size = 3, position = position_stack(vjust = 0.5))+
+  #geom_text_repel(position =position_stack(vjust = 0.5) )+
+  scale_fill_viridis(option="turbo","bd")+
+  coord_flip()+
+  theme_classic()+
+  xlab("")+
+  ylab(l2)+
+  theme(legend.position="none")
+
+
+final_rc <- ggarrange(bd_map,expansao_bd_plot_rc,nrow = 2)
+
+
+ggsave(filename = "figures/agri_expansion_bd_Trade_map.jpeg",width = 25.4,height = 14.288,units = "cm",plot = final_rc,bg ="white")
+
+#-------------------------------------------------------------------------------
+
+# olhar pra area total de expansao da categoria alta!
+
+# ainda nao faz sentido
+
+expansao_bd_plot_rc_area <- expansao_bd_result_rc%>%  
+  filter(bd_class_rc>0.45)%>%
+  ggplot( aes( y=area_agricola_1000, x=scen)) + 
+  geom_bar(position="stack", stat="identity",fill="gray")+
+  #geom_text(size = 3, position = position_stack(vjust = 0.5))+
+  #geom_text_repel(position =position_stack(vjust = 0.5) )+
+  #scale_fill_viridis(option="turbo","bd")+
+  #scale_fill_viridis_c(limits = c(0.3, 0.5),option="turbo","bd")+
+  coord_flip()+
+  theme_classic()+
+  xlab("")+
+  ylab(l)+
+  theme(legend.position="none")
+
+expansao_bd_plot_rc_freq <- expansao_bd_result_rc%>%  
+  filter(bd_class_rc>0.4)%>%
+  ggplot( aes(fill="lightgrey", y=freq_rc, x=scen)) + 
+  geom_bar(position="stack", stat="identity")+
+  #geom_text(size = 3, position = position_stack(vjust = 0.5))+
+  #geom_text_repel(position =position_stack(vjust = 0.5) )+
+  #scale_fill_viridis(option="turbo","bd")+
+  #scale_fill_viridis_c(limits = c(0.5, 0.5),option="turbo","bd")+
+  coord_flip()+
+  theme_classic()+
+  xlab("")+
+  ylab(l2)+
+  theme(legend.position="none")
+
+
+#---- focar na America do Sul! -------------------------------------------------
+

@@ -43,7 +43,7 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
 
 
 scen_to_keep <- c("TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                                      "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
+                  "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                             "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
 
 
 scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )
@@ -99,7 +99,7 @@ for(i in 1:length(scen_subset)){
   
   pasture_sub_r <- lapply(pasture_sub,stack)
   
-  # sum agricultural uses!
+  # sum pasture
   
   pasture <- Reduce("+",pasture_sub_r)
   
