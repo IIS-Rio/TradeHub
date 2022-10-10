@@ -40,3 +40,25 @@ for(i in 1:length(scenarios_trade)){
   
   writeRaster(x = expan,filename = file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/agricultural expansion",paste0(scenarios_trade[i],"_agricultural_expansion.tif")) ,overwrite=T)
 }
+# ------------------------------------------------------------------------------
+
+# calculando expansao de pastagem
+
+# cenario BAU (usado pra comparacao de todas as metricas)
+
+baseline_2020 <- raster(file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use","pasture.tif"))
+
+for(i in 1:length(scenarios_trade)){
+ 
+  scen_2050 <- raster(file.path(p_land_2050,scenarios_trade[i],"pasture.tif"))
+  
+  # essa eh a diferenca; soh oq for maior que zero eh expansao. Teve tb reducao em alguns locais.
+  
+  dif <- scen_2050 - baseline_2020
+  
+  # SO EXPANSAO
+  
+  expan <-  reclassify(dif, cbind(-1, 0, 0))
+  
+  writeRaster(x = expan,filename = file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/agricultural expansion",paste0(scenarios_trade[i],"_pasture_expansion.tif")) ,overwrite=T)
+}

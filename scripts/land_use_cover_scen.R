@@ -209,3 +209,34 @@ lu_plangea <- lu_change%>%
 
 ggsave(filename = "figures/lu_cover_PLANGEA_Trade_scen.jpeg",width = 25.4,height = 14.288,units = "cm",plot = lu_plangea,bg ="white")
 
+#-------------------------------------------------------------------------------
+
+# testar pastagem + agricultura (usando output plangea)
+
+#-------------------------------------------------------------------------------
+
+# calculando percentualmente pasto e agri
+# da uma diferença importante, pastagem faz resultados fazerem sentido!!!
+
+
+lu_share_agri_past <- lu_change%>%  
+  filter(name=="AGR"|name=="PAS")%>%
+  mutate(lu_1000 = value/1000)%>%
+  group_by(label_scen,name) %>%
+  summarise(lu_1000 = sum(lu_1000)) %>%
+  mutate(freq = lu_1000 / sum(lu_1000))
+
+
+agri_past <- lu_share_agri_past%>%  
+  #mutate(perc = paste0(round(freq,2)*100," ","%")) %>%
+ filter(name=="AGR")%>%
+  ggplot( aes(fill=name, y=lu_1000, x=label_scen)) + 
+  geom_bar(position="stack", stat="identity")+
+  #geom_text(size = 3, position = position_stack(vjust = 0.5))+
+  #geom_text_repel(position =position_stack(vjust = 0.5) )+
+  #scale_fill_manual(values = c("chocolate1","bisque4","darkgoldenrod3","darkgreen","chartreuse2","chartreuse4","darkolivegreen1","burlywood","darkseagreen2","deepskyblue","black"),"lulc")+
+  coord_flip()+
+  theme_classic()+
+  xlab("")+
+  ylab("")+
+  theme(legend.position="right")

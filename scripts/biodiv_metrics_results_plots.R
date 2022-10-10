@@ -71,7 +71,7 @@ val_l <- val_l %>%
   mutate(relative_to_BAU_2050=value/value[label_scen=="BAU"])
 
 
-val_l$label_scen <-factor(val_l$label_scen,levels = rev(c("exacerb. lib. + BTC baseline","transp.cost. red + BTC baseline","tarif.elim.+BTC baseline","BAU","frict.&reconfig. + BTC baseline")))
+val_l$label_scen <-factor(val_l$label_scen,levels = rev(c("exacerb. lib. + BTC baseline","tarif.elim.+BTC baseline","transp.cost. red + BTC baseline","frict.&reconfig. + BTC baseline","BAU")))
 
 
 

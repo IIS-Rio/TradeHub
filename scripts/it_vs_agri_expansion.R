@@ -55,7 +55,9 @@ it_cut <- it %>%
 
 p2 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/agricultural expansion"
 
-agri_expan_files <-list.files(p2)
+agri_expan_files <-list.files(p2,"agri")
+pasture_expan_files <-list.files(p2,"pasture")
+
 
 scen <- c("frictions and reconfig.","BAU","transp. cost. red","tariff elim.","exacerb. lib")
 # o indice aqui nao eh igua o do scenarios, pq soh tem os de comercio. 
@@ -70,7 +72,9 @@ counter <-1
 for(s in 1:length(agri_expan_files)){
   
   agri_expan_r <- raster(file.path(p2,agri_expan_files[s]))
-  agri_expan_r <- (agri_expan_r*(50100*61800))/10^6
+  pasture_expan_r <- raster(file.path(p2,pasture_expan_files[s]))
+  soma <- agri_expan_r + pasture_expan_r
+  expan_r <- (soma*(50100*61800))/10^6
   
   for(c in classes){
     class <- it_cut
@@ -96,7 +100,7 @@ for(s in 1:length(agri_expan_files)){
 expansao_it_result <- do.call(rbind,expansao_it)
 
 
-expansao_it_result$scen <-factor(expansao_it_result$scen,levels = rev(c("exacerb. lib","transp. cost. red","tariff elim.","BAU","frictions and reconfig.")))
+expansao_it_result$scen <-factor(expansao_it_result$scen,levels = rev(c("exacerb. lib","tariff elim.","transp. cost. red","frictions and reconfig.","BAU")))
 
 
 expansao_it_result2 <- expansao_it_result%>%  
