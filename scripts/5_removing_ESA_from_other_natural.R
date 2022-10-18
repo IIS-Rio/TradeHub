@@ -14,6 +14,9 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
              list.files(file.path(p,"abn_cropland_2Gbioen_10"),pattern = "55"))
 
 
+################################################################################
+# esses eram os cenarios BTC_Baseline. 
+################################################################################
 # scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
 #                   "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
 #                   "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
@@ -23,8 +26,17 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
 # cenarios com comercio e baseline conservacao que faltam
 
 
-scen_to_keep <- c("TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                                      "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
+# scen_to_keep <- c("TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+#                   "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                                      "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
+
+
+# fazer agora esses cenarios, com conservação
+
+scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFBASE_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFBASE_TCREDU_BIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",                                          "TH_TFELIM_TCREDU_BIOD_NOTECH_NODEM_SPA0_SSP2"
+)
 
 
 scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )
@@ -112,7 +124,7 @@ for (i in 1:length(scen_subset)){
     writeRaster(other_nat_ssp2_mult[[x]], save.path, overwrite = T)
   }
   
-  writeRaster(other_non_disagg, paste0(dir,"/" ,scen_subset[i], "_other_natland.tif" ))
+  writeRaster(other_non_disagg, paste0(dir,"/" ,scen_subset[i], "_other_natland.tif" ),overwrite=TRUE)
 
 }
 p

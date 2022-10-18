@@ -30,7 +30,9 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
 
 ################################################################################
 
-
+################################################################################
+# esses eram os cenarios BTC_Baseline. 
+################################################################################
 # scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
 #                   "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
 #                   "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
@@ -41,8 +43,19 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
 # cenarios com comercio e baseline conservacao que faltam
 
 
-scen_to_keep <- c("TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                                      "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
+# scen_to_keep <- c("TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+#                   "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                                      "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
+
+
+# fazer agora esses cenarios, com conservação
+
+scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFBASE_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFBASE_TCREDU_BIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",                                          "TH_TFELIM_TCREDU_BIOD_NOTECH_NODEM_SPA0_SSP2"
+)
+
+
 
 scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )
 

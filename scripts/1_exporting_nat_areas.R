@@ -16,6 +16,7 @@ p <- "/dados/projetos_andamento/TRADEhub/GLOBIOM/atualizacao/scen_desagregados"
 # I combined managed forests into forests!
 
 # forest
+
 forest_files <- list.files(path = p,pattern = "forest*",recursive = T,full.names = T)
 
 # restored areas
@@ -29,26 +30,23 @@ scen <- gsub("_abn_cropland_2Gbioen_10.tif","",
              list.files(file.path(p,"abn_cropland_2Gbioen_10"),pattern = "55"))
 
 
-
-################################################################################
-
 # *** checar se o vetor scen_to_keep e scen_subset estão na mesma ordem! ******
 
 ################################################################################
+# esses eram os cenarios BTC_Baseline. 
+################################################################################
 
-# cenarios piloto
-# scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2" ,
-#                   "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-#                   "TH_TFBASE_TCBASE_BIOD_TECH_DEM_SPA0_SSP2",
-#                   "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-#                   "TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2")
-
-# cenarios com comercio e baseline conservacao que faltam
+# scen_to_keep <- c("TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+#                   "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                                         "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
 
 
-scen_to_keep <- c("TH_TFBASE_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-                  "TH_TFELIM_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",                             "TH_TFELIM_TCREDU_NOBIOD_NOTECH_NODEM_SPA0_SSP2")
+# fazer agora esses cenarios, com conservação
 
+scen_to_keep <- c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFBASE_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFBASE_TCREDU_BIOD_NOTECH_NODEM_SPA0_SSP2",
+                  "TH_TFELIM_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",                                          "TH_TFELIM_TCREDU_BIOD_NOTECH_NODEM_SPA0_SSP2"
+                  )
 
 scen_subset <- grep(pattern =paste(scen_to_keep,collapse = "|"),x = scen,value = T )
 
