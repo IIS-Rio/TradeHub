@@ -502,7 +502,7 @@ for(s in 1:length(agri_expan_files)){
   # limite da regiao
   
   subworld_region <- subworld %>%
-    filter(data==k[3]) # mudar!Aqui define regiao!
+    filter(region=="Eastern Asia") # mudar!Aqui define regiao!
   
   
   # transform data
@@ -523,7 +523,7 @@ for(s in 1:length(agri_expan_files)){
   map <- ggplot() +
     geom_raster(data = agri_ec , aes(x = x, y = y, fill = bi_class)) +
     bi_scale_fill(pal = "DkBlue",dim = 3) +
-    lims(x = xlim, y = ylim)+
+    #lims(x = xlim, y = ylim)+
     #coord_quickmap() +
     labs(
       title = "",
@@ -556,7 +556,7 @@ panel_SA_ec <- plot_grid(plotlist = biv_list_ec2 )
 # ggsave(filename = "figures/exploratory_Trade_agri_expansion_per_region_ec_bivariate.jpeg",width = 25.4,height = 14.288,units = "cm",plot = panel_SA_ec,bg ="white")
 
 
-subset <- plot_grid(plotlist = biv_list_ec2[c(2,3)])
+subset <- plot_grid(plotlist = biv_list_ec2[c(2,3)],nrow=2)
 
 
 finalPlot <-  plot_grid(
@@ -565,4 +565,4 @@ finalPlot <-  plot_grid(
   nrow = 1
 )
 
-ggsave(filename = "figures/exploratory_Trade_agri_expansion_per_region_ec_bivariate_frict_transp_Africa.jpeg",width = 25.4,height = 14.288,units = "cm",plot = finalPlot,bg ="white")
+ggsave(filename = "figures/exploratory_Trade_agri_expansion_per_region_ec_bivariate_frict_transp_EstAsia.jpeg",width = 25.4,height = 14.288,units = "cm",plot = finalPlot,bg ="white")
