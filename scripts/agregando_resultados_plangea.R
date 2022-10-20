@@ -1,4 +1,4 @@
-# explorando resultado
+# explorando resultado (agora com conservacao junto)
 
 #---- pacotes ------------------------------------------------------------------
 
@@ -33,6 +33,7 @@ f <- function(tabelas){
 counter <- 0
 
 # abrindo dfs de resultados
+
 dfs <- lapply(resultados,f)
 
 # combinando em um df unico
@@ -64,12 +65,17 @@ val_l <- left_join(val_l,met_name)
 
 metricas <- unique(val_l$metric)
 
-# tem q ter apenas os cenarios rodados
+# tem q ter apenas os cenarios rodados, na ordem certa
 
 l <- c("BAU",
+       "frict.&reconfig. + C",
        "frict.&reconfig. + BTC baseline",
+       "BAU + C",
+       "transp.cost. red + C",
        "transp.cost. red + BTC baseline",
-       "tarif.elim.+BTC baseline",
+       "tarif.elim.+ C",
+       "tarif.elim.+ BTC baseline",
+       "exacerb. lib. + C",
        "exacerb. lib. + BTC baseline")
 
 nomes_scen <- data.frame(label_scen =l,scenario_name=unique(val_l$scenario_name))
@@ -121,4 +127,5 @@ l2 <-expression(paste("Agriculture expansion ("~km^2," ) ",sep=""))
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())+
   guides(fill=guide_legend(nrow=2,byrow=TRUE,title = ""))
+ 
  
