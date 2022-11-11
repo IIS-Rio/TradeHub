@@ -51,4 +51,8 @@ for(i in 1:length(lu)){
     }
 }
 
+r <-raster("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-regional/CAN/forest.tif")
 
+plot(r)
+
+# plot(raster("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-regional/CAN/agriculture.tif"))
