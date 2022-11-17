@@ -42,9 +42,6 @@ df <- do.call(rbind,lista_df)
 val_l <- df[,c(seq(6,14,2),16:24,27,29,30)] %>%
   pivot_longer(cols = 1:15)
 
-val_l <- val_l[,c(1,16:17)]
-
-
 # adicionando nome da variavel
 
 # bd = débito de extinção de espécies
@@ -53,7 +50,8 @@ val_l <- val_l[,c(1,16:17)]
 # it = integridade de ecossistemas
 # oc = custo de oportunidade
 
-met_name <- data.frame(name = grep(pattern = ".val",unique(val_l$name),value = T),variable=c("Carbon","Ecossistem integrity","Ecoregion vulnerability","Extinction debt","Land opportunity cost"))
+# alterar nomes 
+met_name <- data.frame(name = grep(pattern = ".val",unique(val_l$name),value = T),variable=c("Carbon","Ecossistem integrity reduction","Ecoregion vulnerability","Extinction debt reduction","Land opportunity cost"))
 
 
 val_l <- left_join(val_l,met_name)

@@ -4,6 +4,12 @@ library(dplyr)
 library(ggpubr)
 library(purrr)
 library(scales)
+library(sf)
+library(ggmap)
+library(ggthemes)
+library(RColorBrewer)
+library(viridis)
+library(ggrepel)
 #-------------------------------------------------------------------------------
 
 
@@ -159,10 +165,12 @@ mudanca_total <- lulcc2%>%
   filter(conservation=="BTC-base")%>%
   summarise(total_change=sum(value))
 
-levels <- rev(c('LAC','EAS','CSI','MNA','EUR','OCE','CAN'))
+levels <- rev(c('LAC','SEA','EAS','CSI','MNA',"SAS",'OCE','EUR','CAN'))
 
 lulcc_plangea_rel2 <- lulcc2%>%
   #group_by(region)%>%
+  #excluir cenarios q ainda nao rodaram
+  filter(!region=="SSA")%>%
   arrange(desc(prop_change),.by_group = T)%>%
   mutate(region=factor(region, levels=levels)) %>%   # update the factor levels
   filter(name=="AGR"|name=="PAS"|name=="FOR"|name=="NGR")%>%
@@ -194,7 +202,7 @@ ggsave(filename = "figures_paper/lulcc_PLANGEA_Trade_scen_with_conservation_rela
 metricas <- df%>%
   filter(!variable=="lulcc")%>%
   # excluir OCE pq nao acabou de rodar
-  filter(!region=='OCE')%>%
+  filter(!region=='SSA')%>%
   group_by(region,name)%>%
   filter(variable== unique(variable)) %>%
   mutate(relative_to_BAU_2050=value/value[label_scen=="BAU"])
@@ -207,11 +215,11 @@ metricas <- df%>%
 
 metricas$label_scen <-factor(metricas$label_scen,levels = (c("ETL","Ta","Tr","Fr","Trade-base","BAU")))
 
-metricas$variable <- factor(metricas$variable,levels = (c("Extinction debt","Ecoregion vulnerability","Ecossistem integrity","Carbon","Land opportunity cost")))
+metricas$variable <- factor(metricas$variable,levels = (c("Extinction debt reduction","Ecoregion vulnerability","Ecossistem integrity reduction","Carbon","Land opportunity cost")))
 
 # falta ordenar por regiao e entender melhor as metricas: qndo eh reducao, qndo eh aumento!
 
-metricas$region <- factor(metricas$region,levels = rev(c('LAC','EAS','CSI','MNA','EUR','OCE','CAN')))
+metricas$region <- factor(metricas$region,levels = rev(c('LAC','SEA','EAS','CSI','MNA',"SAS",'OCE','EUR','CAN')))
 
 # reducao no risco de extincao
 # vulnerabilidade das ecorregioes
@@ -244,4 +252,29 @@ metricas_plangea_rel <- metricas%>%
   rotate_x_text(angle = 90)+
   theme(legend.position="top")
 
-ggsave(filename = "figures_paper/metrics_PLANGEA_Trade_scen_with_conservation_relative_BAU2050.jpeg",width = 22,height = 20,units = "cm",plot = metricas_plangea_rel,bg ="white")
+ggsave(filename = "figures_paper/metrics_PLANGEA_Trade_scen_with_conservation_relative_BAU2050.jpeg",width = 23,height = 20,units = "cm",plot = metricas_plangea_rel,bg ="white")
+
+
+#------------------------------------------------------------
+
+# plot regional map
+
+regions <- st_read(file.path("/dados/pessoal/francisco/TradeHub/country_boundaries","world_11regions_boundaries.shp"))
+
+regions_points<- st_centroid(regions)
+regions_points <- cbind(regions, st_coordinates(st_centroid(regions$geometry)))
+
+
+regi_map <- ggplot(data = regions) +
+  geom_sf(color = "black",aes(fill = AggrgtR),alpha=0.8)+
+  theme_map()+
+  #scale_fill_brewer(palette = 'RdGy')
+  scale_fill_viridis_d(option = "turbo")+
+  #geom_text(data =regions_points ,aes(x=X, y=Y, label=AggrgtR))+
+  geom_label(data = regions_points,aes(x = X, y = Y, label = AggrgtR),
+                 hjust = 0, nudge_x = -2, nudge_y = 0,
+                 size = 4, color = "black", fontface = "bold")+
+  theme(legend.position = "none")
+
+
+
