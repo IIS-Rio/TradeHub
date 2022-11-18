@@ -44,6 +44,22 @@ lulcc$name <- factor(lulcc$name,levels = c("AGR","PAS","FOR","NGR","SHR","WET","
 
 l <-expression(paste("area-change relative to baseline 2020("~km^2,"x1000 ) ",sep=""))
 
+
+# ordenar por area de mudanca - definir manualmente depois de agregar total
+
+mudanca_total <- lulcc%>%
+  group_by(region)%>%
+  filter(name=="AGR"|name=="PAS")%>%
+  filter(label_scen=='ETL')%>%
+  filter(conservation=="BTC-base")%>%
+  summarise(total_change=sum(value))%>%
+  arrange(total_change)%>%  
+  mutate(region=factor(region, levels=region))
+
+levels_regions <- (mudanca_total$region)
+
+lulcc$region <- factor(lulcc$region,levels = levels_regions)
+
 lulcc_plangea <- lulcc%>%
   #filter(name=="AGR")%>%
   filter(!name=="OTR")%>%
@@ -57,12 +73,15 @@ lulcc_plangea <- lulcc%>%
   #rotate_x_text(angle = 90)+
   #scale_x_discrete(labels=label)+
   #ggtitle(land_use)+
-  scale_fill_brewer(palette = "Greens",labels=c("BTC-base","C"),name="")+
+  scale_fill_brewer(palette = "Set1",labels=c("BTC-base","C"),name="")+
   geom_hline(yintercept=0, linetype="dashed", color = "black")+
   facet_grid(label_scen~name)+
   #theme_classic()+
   theme_bw()+
-  theme(legend.position="top")
+  theme(legend.position="top")+
+  rotate_x_text(angle = 90)
+
+#paletas possiveis: Greens, Spectral, Accent, Dark2
 
 ggsave(filename = "figures_paper/lulcc_PLANGEA_Trade_scen_with_conservation_absolute.jpeg",width = 22,height = 20,units = "cm",plot = lulcc_plangea,bg ="white")
 
@@ -130,6 +149,9 @@ lulcc2$name <- factor(lulcc2$name,levels = c("AGR","PAS","FOR","NGR","SHR","WET"
 
 l2 <-expression(paste("proportional change relative to baseline 2020 (% x"~10^-4," ) ",sep=""))
 
+
+lulcc2$region <- factor(lulcc2$region,levels = levels_regions)
+
 lulcc_plangea_rel <- lulcc2%>%
   #filter(name=="AGR")%>%
   filter(!name=="OTR")%>%
@@ -143,7 +165,7 @@ lulcc_plangea_rel <- lulcc2%>%
   xlab("")+
   #scale_x_discrete(labels=label)+
   #ggtitle(land_use)+
-  scale_fill_brewer(palette = "Greens",labels=c("BTC-base","C"),name="")+
+  scale_fill_brewer(palette = "Set1",labels=c("BTC-base","C"),name="")+
   geom_hline(yintercept=0, linetype="dashed", color = "black")+
   facet_grid(label_scen~name)+
   #theme_classic()+
@@ -157,22 +179,14 @@ ggsave(filename = "figures_paper/lulcc_PLANGEA_Trade_scen_with_conservation_rela
 # talvez valha a pena focar nos usos com maiores mudanças, e deixar todos como
 # material suplementar. Nesse caco: agr,pas,for,NGR
 
-# ordenar por area de mudanca - definir manualmente depois de agregar total
 
-mudanca_total <- lulcc2%>%
-  group_by(region)%>%
-  filter(name=="AGR"|name=="PAS")%>%
-  filter(conservation=="BTC-base")%>%
-  summarise(total_change=sum(value))
 
-levels <- rev(c('LAC','SEA','EAS','CSI','MNA',"SAS",'OCE','EUR','CAN'))
+# levels <- rev(c('LAC','SEA','EAS','CSI','MNA',"SAS",'OCE','EUR','CAN'))
 
 lulcc_plangea_rel2 <- lulcc2%>%
   #group_by(region)%>%
-  #excluir cenarios q ainda nao rodaram
-  filter(!region=="SSA")%>%
   arrange(desc(prop_change),.by_group = T)%>%
-  mutate(region=factor(region, levels=levels)) %>%   # update the factor levels
+  # mutate(region=factor(region, levels=levels)) %>%   # update the factor levels
   filter(name=="AGR"|name=="PAS"|name=="FOR"|name=="NGR")%>%
   #filter(!name=="OTR")%>%
   mutate(prop_change=prop_change*10^6)%>%
@@ -185,7 +199,7 @@ lulcc_plangea_rel2 <- lulcc2%>%
   xlab("")+
   #scale_x_discrete(labels=label)+
   #ggtitle(land_use)+
-  scale_fill_brewer(palette = "Greens",labels=c("BTC-base","C"),name="")+
+  scale_fill_brewer(palette = "Set1",labels=c("BTC-base","C"),name="")+
   geom_hline(yintercept=0, linetype="dashed", color = "black")+
   facet_grid(label_scen~name)+
   #theme_classic()+
@@ -201,36 +215,109 @@ ggsave(filename = "figures_paper/lulcc_PLANGEA_Trade_scen_with_conservation_rela
 
 metricas <- df%>%
   filter(!variable=="lulcc")%>%
-  # excluir OCE pq nao acabou de rodar
-  filter(!region=='SSA')%>%
   group_by(region,name)%>%
   filter(variable== unique(variable)) %>%
-  mutate(relative_to_BAU_2050=value/value[label_scen=="BAU"])
+  # calculando prop. em relacao ao BAU em modulo
+  mutate(relative_to_BAU_2050=value/abs(value[label_scen=="BAU"]))
 
-# tem q ser relativo ao BAU, logo a dif entre 1 eh o scenario eh a variacao  
-# fazer sem assinalar o BAU 2050
-#metricas$relative_to_BAU_2050 <- metricas$relative_to_BAU_2050 -1
+# tem q ser relativo ao BAU 2050, mas acho q tem q ser em modulo pra fazer sentido
+
 
 #ordenar 
 
 metricas$label_scen <-factor(metricas$label_scen,levels = (c("ETL","Ta","Tr","Fr","Trade-base","BAU")))
 
-metricas$variable <- factor(metricas$variable,levels = (c("Extinction debt reduction","Ecoregion vulnerability","Ecossistem integrity reduction","Carbon","Land opportunity cost")))
+
+
+metricas$variable <- recode_factor(metricas$variable, 'Ecoregion vulnerability' = "Ecoregion vulnerability reduction")
+
+
+metricas$variable <- factor(metricas$variable,levels = (c("Extinction debt reduction","Ecoregion vulnerability reduction","Ecossistem integrity reduction","Carbon","Land opportunity cost")))
 
 # falta ordenar por regiao e entender melhor as metricas: qndo eh reducao, qndo eh aumento!
 
-metricas$region <- factor(metricas$region,levels = rev(c('LAC','SEA','EAS','CSI','MNA',"SAS",'OCE','EUR','CAN')))
+metricas$region <- factor(metricas$region,levels = (c(levels_regions)))
 
 # reducao no risco de extincao
-# vulnerabilidade das ecorregioes
+# reducao na vulnerabilidade das ecorregioes
 # reducao na integridade dos ecossistemas
+# todas as metricas sao qnto maior melhor! menos custo!
 
-# a escala de mudancas eh mto distinta pra plotar junto. talvez separar por regiao seja melhor
+#plotando valores absolutos
+
+
+metricas_plangea_absol <- metricas%>%
+  #filter(conservation=="BTC-base")%>%
+  #filter(region=="LAC")%>%
+  filter(!label_scen=="BAU")%>%
+  #filter(!label_scen=="Trade-base")%>%
+  ggplot(aes(y=value, x=region,fill=conservation)) +
+  geom_bar(stat="identity",position = "dodge")+
+  #scale_y_continuous(labels = function(x) sprintf("%g", x))+
+  coord_flip()+
+  #geom_point()+
+  ylab("relative variation (BAU 2020)")+
+  xlab("")+
+  scale_y_continuous(trans=scales::pseudo_log_trans(base = 10),breaks = c(-30,-100,-7,-2,0,2,7,30,100))+
+  #ggtitle(land_use)+
+  scale_fill_brewer(palette = "Set1",labels=c("BTC-base","C"),name="")+
+  geom_hline(yintercept=0, linetype="dashed",color = "darkgray", size=1)+
+  facet_grid(label_scen~variable,scales = "free_x")+
+  #theme_classic()+
+  theme_bw()+
+  rotate_x_text(angle = 90)+
+  theme(legend.position="top")+
+  theme(strip.text.x = element_text(size = 7))
+
+
+#criando df pra plotar pontos
+
+metricas_Trade_base_C <- metricas%>%
+  filter(!label_scen=="BAU")%>%
+  # so esse cenario tem valor, resto eh NA
+  mutate(relative_to_BAU_2050_ed= ifelse(scenario=="TH_TFBASE_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",relative_to_BAU_2050,NA))
+  
 
 
 
+# plotando em relacao ao BAU 2050
 
 metricas_plangea_rel <- metricas%>%
+  #filter(conservation=="BTC-base")%>%
+  # tirando Trade-base+C
+  filter(!scenario=="TH_TFBASE_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2")%>%
+  filter(!label_scen=="BAU")%>%
+  #filter(!label_scen=="Trade-base")%>%
+  ggplot(aes(y=relative_to_BAU_2050, x=region,fill=conservation)) +
+  geom_bar(stat="identity",position = "dodge")+
+  # geom_point(data = metricas_Trade_base_C[,c(1,3,4,5,7,9)], aes(x = region, y= relative_to_BAU_2050_ed),shape=3,show.legend = F)+
+  #scale_y_continuous(labels = function(x) sprintf("%g", x))+
+  coord_flip()+
+  #geom_point()+
+  ylab("relative variation (BAU 2050)")+
+  xlab("")+
+  scale_y_continuous(trans=scales::pseudo_log_trans(base = 10),breaks = c(-30,-100,-7,-2,0,2,7,30,100))+
+  #ggtitle(land_use)+
+  scale_fill_brewer(palette = "Set1",labels=c("BTC-base","C"),name="")+
+  geom_hline(yintercept=0, linetype="dashed",color = "darkgray", size=1)+
+  facet_grid(label_scen~variable,scales = "free_x")+
+  #theme_classic()+
+  theme_bw()+
+  rotate_x_text(angle = 90)+
+  theme(legend.position="top")+
+  theme(strip.text.x = element_text(size = 7))
+
+#tentativa de incluir cruz na legenda sem sobrepor
+
+metricas_plangea_rel2 <- metricas_plangea_rel + geom_point(data = metricas_Trade_base_C[,c(1,3,4,5,7,9)], aes(x = region, y= relative_to_BAU_2050_ed),color="black",shape=3)
+
+ggsave(filename = "figures_paper/metrics_PLANGEA_Trade_scen_with_conservation_relative_BAU2050.jpeg",width = 24,height = 20,units = "cm",plot = metricas_plangea_rel,bg ="white")
+
+
+# oq da pra concluir é que na regiao mais afetada (LAC), ações de restauração e conservação são mto importantes e revertem o desempenho ruim da liberalização do comércio!
+
+
+metricas_plangea_relnormal_sc <- metricas%>%
   #filter(conservation=="BTC-base")%>%
   #filter(region=="LAC")%>%
   filter(!label_scen=="BAU")%>%
@@ -242,17 +329,46 @@ metricas_plangea_rel <- metricas%>%
   #geom_point()+
   ylab("relative variation (BAU 2050)")+
   xlab("")+
-  scale_y_continuous(trans=scales::pseudo_log_trans(base = 10),breaks = c(-30,-100,-7,-2,0,2,7,30,100))+
+  # scale_y_continuous(trans=scales::pseudo_log_trans(base = 10),breaks = c(-30,-100,-7,-2,0,2,7,30,100))+
   #ggtitle(land_use)+
-  scale_fill_brewer(palette = "Greens",labels=c("BTC-base","C"),name="")+
+  scale_fill_brewer(palette = "Set1",labels=c("BTC-base","C"),name="")+
   geom_hline(yintercept=0, linetype="dashed",color = "darkgray", size=1)+
   facet_grid(label_scen~variable,scales = "free_x")+
   #theme_classic()+
   theme_bw()+
   rotate_x_text(angle = 90)+
-  theme(legend.position="top")
+  theme(legend.position="top")+
+  theme(strip.text.x = element_text(size = 7))
 
-ggsave(filename = "figures_paper/metrics_PLANGEA_Trade_scen_with_conservation_relative_BAU2050.jpeg",width = 23,height = 20,units = "cm",plot = metricas_plangea_rel,bg ="white")
+# ggsave(filename = "figures_paper/metrics_PLANGEA_Trade_scen_with_conservation_relative_BAU2050.jpeg",width = 24,height = 20,units = "cm",plot = metricas_plangea_rel,bg ="white")
+
+# pensar em plotar separado
+
+metricas$region <- factor(metricas$region,levels = rev(c(levels_regions)))
+metricas$label_scen <-factor(metricas$label_scen,levels = rev(c("ETL","Ta","Tr","Fr","Trade-base","BAU")))
+
+bd <- metricas%>%
+  filter(name=="bd.val")%>%
+  filter(!scenario=="TH_TFBASE_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2")%>%
+  filter(!label_scen=="BAU")%>%
+  #filter(!label_scen=="Trade-base")%>%
+  ggplot(aes(y=relative_to_BAU_2050, x=label_scen,fill=conservation)) +
+  geom_bar(stat="identity",position = "dodge")+
+  #scale_y_continuous(labels = function(x) sprintf("%g", x))+
+  coord_flip()+
+  #geom_point()+
+  ylab("relative variation (BAU 2050)")+
+  xlab("")+
+   scale_y_continuous(trans=scales::pseudo_log_trans(base = 10),breaks = c(-30,-100,-7,-2,0,2,7,30,100))+
+  #ggtitle(land_use)+
+  scale_fill_brewer(palette = "Set1",labels=c("BTC-base","C"),name="")+
+  geom_hline(yintercept=0, linetype="dashed",color = "darkgray", size=1)+
+  facet_wrap(~region)+
+  #theme_classic()+
+  theme_bw()+
+  rotate_x_text(angle = 90)+
+  theme(legend.position="top")+
+  theme(strip.text.x = element_text(size = 7))
 
 
 #------------------------------------------------------------
@@ -263,6 +379,7 @@ regions <- st_read(file.path("/dados/pessoal/francisco/TradeHub/country_boundari
 
 regions_points<- st_centroid(regions)
 regions_points <- cbind(regions, st_coordinates(st_centroid(regions$geometry)))
+
 
 
 regi_map <- ggplot(data = regions) +
@@ -276,5 +393,10 @@ regi_map <- ggplot(data = regions) +
                  size = 4, color = "black", fontface = "bold")+
   theme(legend.position = "none")
 
+ggsave(filename = "figures_paper/region_map.jpeg",width = 22,height = 12,units = "cm",plot = regi_map,bg ="white")
 
 
+regions%>%
+  filter(AggrgtR=='SEA')%>%
+  ggplot() +
+  geom_sf()
