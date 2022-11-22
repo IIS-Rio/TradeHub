@@ -10,6 +10,7 @@ library(ggthemes)
 library(RColorBrewer)
 library(viridis)
 library(ggrepel)
+
 #-------------------------------------------------------------------------------
 
 
@@ -90,6 +91,7 @@ ggsave(filename = "figures_paper/lulcc_PLANGEA_Trade_scen_with_conservation_abso
 ################################################################################
 
 # precisa ter a area total desses usos pra 2020
+# pro total ficar compativel com o resto, precisa dividir tudo pelo total global, nao pelo total da regiao!
 
 p_2020 <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use"
 
@@ -133,9 +135,25 @@ areas_2020 <- areas_2020%>%
   group_by(lu_PLANGEA)%>%
   summarise(total_area=sum(total_area))
 
+
+# calculando mudanca total por cenario
+
+total_change <- lulcc %>%
+  group_by(scenario,name,variable,label_scen,conservation)%>%
+  summarise(value=sum(value))
+
+
+total_change$region <- "Total"
+
+# adicionando "regiao total" ao data.frame
+
+lulcc <- rbind(lulcc,total_change)
+
+
 # agregando ao df 
 
 lulcc2 <- left_join(lulcc,areas_2020,by=c("name"="lu_PLANGEA"))
+
 
 
 lulcc2 <- lulcc2%>%
@@ -150,7 +168,11 @@ lulcc2$name <- factor(lulcc2$name,levels = c("AGR","PAS","FOR","NGR","SHR","WET"
 l2 <-expression(paste("proportional change relative to baseline 2020 (% x"~10^-4," ) ",sep=""))
 
 
-lulcc2$region <- factor(lulcc2$region,levels = levels_regions)
+
+levels_regions <- c("Total","SSA","LAC","CSI","SEA","EAS","MNA","OCE","SAS","EUR","USA","CAN")
+
+
+lulcc2$region <- factor(lulcc2$region,levels = rev(levels_regions))
 
 lulcc_plangea_rel <- lulcc2%>%
   #filter(name=="AGR")%>%
@@ -178,9 +200,6 @@ ggsave(filename = "figures_paper/lulcc_PLANGEA_Trade_scen_with_conservation_rela
 
 # talvez valha a pena focar nos usos com maiores mudanças, e deixar todos como
 # material suplementar. Nesse caco: agr,pas,for,NGR
-
-
-
 # levels <- rev(c('LAC','SEA','EAS','CSI','MNA',"SAS",'OCE','EUR','CAN'))
 
 lulcc_plangea_rel2 <- lulcc2%>%
@@ -220,6 +239,25 @@ metricas <- df%>%
   # calculando prop. em relacao ao BAU em modulo
   mutate(relative_to_BAU_2050=value/abs(value[label_scen=="BAU"]))
 
+# calculando metricas total
+
+metricas_total <- df%>%
+  filter(!variable=="lulcc")%>%
+  group_by(variable,name,scenario,label_scen,conservation)%>%
+  summarise(value=sum(value))
+  
+metricas_total  <- metricas_total%>%
+  group_by(name)%>%
+  filter(variable== unique(variable)) %>%
+  # calculando prop. em relacao ao BAU em modulo
+  mutate(relative_to_BAU_2050=value/abs(value[label_scen=="BAU"]))
+
+metricas_total$region <- "Total"  
+
+
+metricas <- rbind(metricas,metricas_total)
+
+
 # tem q ser relativo ao BAU 2050, mas acho q tem q ser em modulo pra fazer sentido
 
 
@@ -236,7 +274,7 @@ metricas$variable <- factor(metricas$variable,levels = (c("Extinction debt reduc
 
 # falta ordenar por regiao e entender melhor as metricas: qndo eh reducao, qndo eh aumento!
 
-metricas$region <- factor(metricas$region,levels = (c(levels_regions)))
+metricas$region <- factor(metricas$region,levels = rev(c(levels_regions)))
 
 # reducao no risco de extincao
 # reducao na vulnerabilidade das ecorregioes
@@ -277,9 +315,6 @@ metricas_Trade_base_C <- metricas%>%
   # so esse cenario tem valor, resto eh NA
   mutate(relative_to_BAU_2050_ed= ifelse(scenario=="TH_TFBASE_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2",relative_to_BAU_2050,NA))
   
-
-
-
 # plotando em relacao ao BAU 2050
 
 metricas_plangea_rel <- metricas%>%
@@ -309,9 +344,9 @@ metricas_plangea_rel <- metricas%>%
 
 #tentativa de incluir cruz na legenda sem sobrepor
 
-metricas_plangea_rel2 <- metricas_plangea_rel + geom_point(data = metricas_Trade_base_C[,c(1,3,4,5,7,9)], aes(x = region, y= relative_to_BAU_2050_ed),color="black",shape=3)
+metricas_plangea_rel2 <- metricas_plangea_rel + geom_point(data = metricas_Trade_base_C[,c(1,3,4,5,7,9)], aes(x = region, y= relative_to_BAU_2050_ed),color="black",shape=3,show.legend = F)
 
-ggsave(filename = "figures_paper/metrics_PLANGEA_Trade_scen_with_conservation_relative_BAU2050.jpeg",width = 24,height = 20,units = "cm",plot = metricas_plangea_rel,bg ="white")
+ggsave(filename = "figures_paper/metrics_PLANGEA_Trade_scen_with_conservation_relative_BAU2050.jpeg",width = 24,height = 20,units = "cm",plot = metricas_plangea_rel2,bg ="white")
 
 
 # oq da pra concluir é que na regiao mais afetada (LAC), ações de restauração e conservação são mto importantes e revertem o desempenho ruim da liberalização do comércio!
@@ -370,8 +405,60 @@ bd <- metricas%>%
   theme(legend.position="top")+
   theme(strip.text.x = element_text(size = 7))
 
+#------------------------------------------------------------------------------
 
-#------------------------------------------------------------
+# plotando resultados como tiles, escalados em uma mesma escala de zero a um
+
+
+summary(pseudo_log_trans(metricas$relative_to_BAU_2050))
+
+metricas$relative_to_BAU_2050_sc <- metricas$relative_to_BAU_2050/max(metricas$relative_to_BAU_2050)
+
+# x, x and fill with values
+
+my_breaks <- c(-0.4,0,1,2)
+
+metricas$name <- gsub(pattern = ".val",replacement = "",x = metricas$name)
+
+metricas_grid_BTC_base <- metricas%>%
+  filter(!label_scen=="BAU")%>%
+  filter(!conservation=="C")%>%
+  #mutate(relative_to_BAU_2050=relative_to_BAU_2050/max(relative_to_BAU_2050))%>%
+  ggplot(aes(y = region, x=name)) +
+  geom_raster(aes(fill = relative_to_BAU_2050_sc))+
+  scale_fill_viridis(name = "Rel. BAU",breaks = my_breaks,trans=scales::pseudo_log_trans(sigma = 0.001))+
+  #scale_y_continuous(trans=scales::pseudo_log_trans(base = 10))
+  facet_wrap(~label_scen)+
+  rotate_x_text(angle = 90)+
+  xlab("")+
+  ylab("")+
+  ggtitle("BTC-base") 
+
+
+
+metricas_grid_C <- metricas%>%
+  filter(!label_scen=="BAU")%>%
+  filter(conservation=="C")%>%
+  ggplot(aes(y = region, x=name)) +
+  geom_raster(aes(fill = relative_to_BAU_2050_sc))+
+  scale_fill_viridis(name = "Rel. BAU",breaks = my_breaks,trans=scales::pseudo_log_trans(sigma = 0.001))+
+  #scale_y_continuous(trans=scales::pseudo_log_trans(base = 10))
+  facet_wrap(~label_scen)+
+  rotate_x_text(angle = 90)+
+  xlab("")+
+  ylab("")+
+  ggtitle("C")
+
+#option="plasma"
+tiles_plot <- ggarrange(metricas_grid_BTC_base,metricas_grid_C,widths = c(2,3) ,common.legend = T)
+
+my_legend <- get_legend(metricas_grid_C)
+
+# talves separar aqui apenas quem melhorou e quem piorou em termos relativos a 2050 pode funcionar legal tb! mas perde info.
+
+ggsave(filename = "figures_paper/metrics_PLANGEA_Trade_scen_with_conservation_relative_BAU2050_heatmaps.jpeg",width = 23,height = 12,units = "cm",plot = tiles_plot,bg ="white")
+
+#------------------------------------------------------------------------------
 
 # plot regional map
 
@@ -381,22 +468,21 @@ regions_points<- st_centroid(regions)
 regions_points <- cbind(regions, st_coordinates(st_centroid(regions$geometry)))
 
 
+countries <-  st_read(file.path("/dados/pessoal/francisco/TradeHub/country_boundaries","country_boundaries.shp"))
 
-regi_map <- ggplot(data = regions) +
+
+regi_map <- ggplot(data = countries) +
   geom_sf(color = "black",aes(fill = AggrgtR),alpha=0.8)+
   theme_map()+
-  #scale_fill_brewer(palette = 'RdGy')
-  scale_fill_viridis_d(option = "turbo")+
+  scale_fill_brewer(NULL,palette = 'RdYlGn', direction = -1)+
+  #scale_fill_viridis_d(option = "turbo")+
   #geom_text(data =regions_points ,aes(x=X, y=Y, label=AggrgtR))+
   geom_label(data = regions_points,aes(x = X, y = Y, label = AggrgtR),
                  hjust = 0, nudge_x = -2, nudge_y = 0,
-                 size = 4, color = "black", fontface = "bold")+
+                 size = 2, color = "black", fontface = "bold")+
   theme(legend.position = "none")
+
 
 ggsave(filename = "figures_paper/region_map.jpeg",width = 22,height = 12,units = "cm",plot = regi_map,bg ="white")
 
 
-regions%>%
-  filter(AggrgtR=='SEA')%>%
-  ggplot() +
-  geom_sf()
