@@ -21,6 +21,7 @@ scientific_10 <- function(x) {
   parse(text=gsub("e", "%*% 10^", scales::scientific_format()(x)))
 }
 
+
 ###############################################################################
 # versao com valores absolutos
 ###############################################################################
@@ -66,7 +67,7 @@ ggsave(filename = "figures/exploratory_Trade_scen.jpeg",width = 25.4,height = 14
 
 val_l <- val_l %>%
   filter(metric== unique(metric)) %>%
-  mutate(relative_to_BAU_2050=value/value[label_scen=="BAU"])
+  mutate(relative_to_BAU_2050=value/abs(value[label_scen=="BAU"]))
 
 
 # order by converted area
@@ -80,37 +81,47 @@ val_l$scen_type <- NA
 val_l$scen_type[c(grep(pattern = "+ C",x = val_l$label_scen))] <- "C"
 val_l$scen_type[c(grep(pattern = "+ C",x = val_l$label_scen,invert = T))] <- "baseline"
 
-# plotando cenarios sem ações de conservacao!
 
+
+
+# plotando cenarios sem ações de conservacao!
 
 # labels legenda (nem precisa)
 
 l <- c("Fr","Tr","Ta","ETL")
 
-val_l$relative_to_BAU_2050_red <- 1 - val_l$relative_to_BAU_2050
+
+# aqui é em relacao ao BAU, q tem valor -1 sempre.
+
+val_l$relative_to_BAU_2050_rc<-  val_l$relative_to_BAU_2050 +1
 
 lista_todos_relative_baseline <- list()
 
 c=1
 
-metricas_sem_oc <- metricas[-5]
+metricas_sem_oc <- rev(metricas[c(-5,-1)])
+nomes_corretos <- c("Extinction debt reduction","Ecoregion vulnerability reduction","Ecossistem integrity ")
 
 for(metrica in metricas_sem_oc){
   
   gfico <- val_l %>%
     filter(metric== metrica)%>%
     filter(scen_type=="baseline")%>%
-    # tirando BAU
+        # tirando BAU
     filter(label_scen != "BAU")%>%
-    ggplot( aes(x=label_scen, y=relative_to_BAU_2050_red,fill=label_scen)) + 
+    filter(name != "cb.val")%>%
+    filter(name != "oc.val")%>%
+    # ordenando metricas
+    mutate(metric =factor(metric,levels = rev(c("Extinction debt","Ecoregion's vulnerability","Ecossistem's integrity","Carbon","Land opportunity cost"))))%>%
+    ggplot( aes(x=label_scen, y=relative_to_BAU_2050_rc,fill=label_scen)) + 
     geom_bar(stat = "identity",position = position_dodge())+
     #scale_y_continuous(label=scientific_10 ) +
     theme_classic()+
-    xlab(metrica)+
+    xlab(nomes_corretos[c])+
     ylab("Relat. variation (BAU 2050)")+
     scale_fill_brewer(palette = "Spectral",name="",labels=l)+
     geom_hline(yintercept=0, linetype="dashed",color = "darkgray", size=1)+
-    ylim(-0.5,0.5)+
+    ylim(-0.6,0.6)+
     coord_flip()+
     theme(legend.position = 'bottom', legend.direction = "horizontal",
           axis.text.y=element_blank(),
@@ -120,7 +131,7 @@ for(metrica in metricas_sem_oc){
   c = c+1
 }
 
-todos_plots_relative <- ggarrange(plotlist = lista_todos_relative_baseline[2:4],common.legend = T,ncol = 3,labels = c("A","B","C"))
+todos_plots_relative <- ggarrange(plotlist = lista_todos_relative_baseline,common.legend = T,ncol = 3,labels = c("A","B","C"))
 
 # ggsave(filename = "figures/exploratory_Trade_relative_values_no_oc.jpeg",width = 25.4,height = 9,units = "cm",plot = todos_plots_relative,bg ="white")
 
@@ -133,26 +144,27 @@ lista_todos_relative_conservacao <- list()
 
 c=1
 
-metricas_sem_oc <- metricas[-5]
+metricas_sem_oc <-rev( metricas[c(-5,-1)])
 
 
 
 for(metrica in metricas_sem_oc){
   
   
-  valores_BAU_C <- val_l$relative_to_BAU_2050_red[val_l$label_scen=="BAU + C"&val_l$metric==metrica]
+  valores_BAU_C <- val_l$relative_to_BAU_2050_rc[val_l$label_scen=="BAU + C"&val_l$metric==metrica]
   valores_BAU_C <- valores_BAU_C-1
   gfico <- val_l %>%
     filter(metric== metrica)%>%
     filter(scen_type=="C")%>%
     # tirando BAU
     filter(label_scen != "BAU + C")%>%
-    mutate(relative_to_BAU_2050_red=relative_to_BAU_2050_red-1)%>%
-    ggplot( aes(x=label_scen, y=relative_to_BAU_2050_red,fill=label_scen)) + 
+    #mutate(relative_to_BAU_2050_red=relative_to_BAU_2050_rc)%>%
+    mutate(relative_to_BAU_2050_rc=relative_to_BAU_2050_rc-1)%>%
+    ggplot( aes(x=label_scen, y=relative_to_BAU_2050_rc,fill=label_scen)) + 
     geom_bar(stat = "identity",position = position_dodge())+
     #scale_y_continuous(label=scientific_10 ) +
     theme_classic()+
-    xlab(metrica)+
+    xlab(nomes_corretos[c])+
     ylab("Relat. variation (BAU 2050)")+
     scale_fill_brewer(palette = "Spectral",name="",labels=l)+
     geom_hline(yintercept=0, linetype="dashed",color = "darkgray", size=1)+
@@ -167,9 +179,9 @@ for(metrica in metricas_sem_oc){
   c = c+1
 }
 
-todos_plots_relative_c <- ggarrange(plotlist = lista_todos_relative_conservacao[2:4],ncol = 3,labels = c("D","E","F"))
+todos_plots_relative_c <- ggarrange(plotlist = lista_todos_relative_conservacao,ncol = 3,labels = c("D","E","F"))
 
 
 combinando_bau_conservation <- ggarrange(todos_plots_relative,todos_plots_relative_c,nrow = 2)
 
-ggsave(filename = "figures/exploratory_Trade_relative_values_biodiv.jpeg",width = 22,height = 16,units = "cm",plot = combinando_bau_conservation,bg ="white")
+ggsave(filename = "figures_paper/global_biodiv_barplot.jpeg",width = 20,height = 20,units = "cm",plot = combinando_bau_conservation,bg ="white")

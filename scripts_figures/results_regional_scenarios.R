@@ -10,6 +10,7 @@ library(ggthemes)
 library(RColorBrewer)
 library(viridis)
 library(ggrepel)
+library(scico)
 
 #-------------------------------------------------------------------------------
 
@@ -410,49 +411,72 @@ bd <- metricas%>%
 # plotando resultados como tiles, escalados em uma mesma escala de zero a um
 
 
-summary(pseudo_log_trans(metricas$relative_to_BAU_2050))
+# primeiro, escalar cada variavel separadamente, ente -1 e 1
 
-metricas$relative_to_BAU_2050_sc <- metricas$relative_to_BAU_2050/max(metricas$relative_to_BAU_2050)
 
-# x, x and fill with values
+metricas2 <- metricas %>%
+  group_by(across(5))%>%
+  filter(variable==variable)%>%
+  mutate(relative_to_BAU_2050_sc=relative_to_BAU_2050/max(relative_to_BAU_2050))
+
+
 
 my_breaks <- c(-0.4,0,1,2)
 
-metricas$name <- gsub(pattern = ".val",replacement = "",x = metricas$name)
+metricas2$name <- gsub(pattern = ".val",replacement = "",x = metricas$name)
 
-metricas_grid_BTC_base <- metricas%>%
+limit <- max(abs(metricas2$relative_to_BAU_2050_sc)) * c(-1, 1)
+
+#ordenando siglas das variaveis
+
+
+metricas2$name <- factor(metricas2$name,levels=c("bd","ec","it","cb","oc"))
+
+
+metricas_grid_BTC_base <- metricas2%>%
   filter(!label_scen=="BAU")%>%
   filter(!conservation=="C")%>%
   #mutate(relative_to_BAU_2050=relative_to_BAU_2050/max(relative_to_BAU_2050))%>%
   ggplot(aes(y = region, x=name)) +
   geom_raster(aes(fill = relative_to_BAU_2050_sc))+
-  scale_fill_viridis(name = "Rel. BAU",breaks = my_breaks,trans=scales::pseudo_log_trans(sigma = 0.001))+
+  #scale_fill_viridis(name = "Rel. BAU",breaks = my_breaks,trans=scales::pseudo_log_trans(sigma = 0.001))+
   #scale_y_continuous(trans=scales::pseudo_log_trans(base = 10))
+  #scale_fill_viridis(limit = limit)+
+  theme_bw()+
+  #scale_fill_distiller(type = "div", limit = limit)+
+  scale_fill_scico(palette = "roma", limit = limit)+ 
   facet_wrap(~label_scen)+
   rotate_x_text(angle = 90)+
   xlab("")+
   ylab("")+
-  ggtitle("BTC-base") 
+  ggtitle("BTC-base") +
+  theme(legend.position = "none")
 
 
 
-metricas_grid_C <- metricas%>%
+metricas_grid_C <- metricas2%>%
   filter(!label_scen=="BAU")%>%
   filter(conservation=="C")%>%
   ggplot(aes(y = region, x=name)) +
   geom_raster(aes(fill = relative_to_BAU_2050_sc))+
-  scale_fill_viridis(name = "Rel. BAU",breaks = my_breaks,trans=scales::pseudo_log_trans(sigma = 0.001))+
+  # scale_fill_viridis(name = "Rel. BAU",breaks = my_breaks,trans=scales::pseudo_log_trans(sigma = 0.001))+
+  theme_bw()+
+  scale_fill_scico(palette = "roma", limit = limit,name = "Rel. variation BAU")+
   #scale_y_continuous(trans=scales::pseudo_log_trans(base = 10))
   facet_wrap(~label_scen)+
   rotate_x_text(angle = 90)+
   xlab("")+
   ylab("")+
-  ggtitle("C")
+  ggtitle("C")+
+  theme(legend.position = c(.85, .2))
+
 
 #option="plasma"
-tiles_plot <- ggarrange(metricas_grid_BTC_base,metricas_grid_C,widths = c(2,3) ,common.legend = T)
 
-my_legend <- get_legend(metricas_grid_C)
+tiles_plot <- ggarrange(metricas_grid_BTC_base,metricas_grid_C,widths = c(2,3))
+
+
+
 
 # talves separar aqui apenas quem melhorou e quem piorou em termos relativos a 2050 pode funcionar legal tb! mas perde info.
 

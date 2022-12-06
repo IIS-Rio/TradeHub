@@ -9,18 +9,21 @@ library(raster)
 p <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/agriculture_expansion_baseline_2050"
 
 
+# filtrar so NOBIOD
 
-agri_expan_files <-list.files(p,pattern = "agricultural")[-2] 
-pasture_expan_files <- list.files(p,pattern = "pasture")[-2]
+agri_expan_files <-grep(pattern = "NOBIOD",x = list.files(p,pattern = "agricultural"),value = T)[-2]
+pasture_expan_files <- grep(pattern = "NOBIOD",list.files(p,pattern = "pasture"),value = T)[-2]
 
-scen <- c("frictions and reconfig.","transp. cost. red","tariff elim.","exacerb. lib")
+
+scen <- c("Fr","Tr","Ta","ETL")
 
 
 # limites globo
 
 data(wrld_simpl)
 
-# prohetando
+# projetando
+
 wrld_transf <- spTransform(wrld_simpl, crs(agri_expan_r))
 
 
@@ -143,7 +146,8 @@ for (i in 1:length(agri_expan_files)){
       y = "",
       caption = scen[i])+
     #ggtitle(paste(,scen[i]))+
-    theme_map()
+    theme_map()+
+    theme(plot.margin = margin(-0.5,0.1,0,-0.5, "cm")) 
     #theme( legend.position = "none")
   l<- get_legend(map, position = NULL)
   
@@ -159,9 +163,18 @@ for (i in 1:length(agri_expan_files)){
 
 global_maps_it <- ggarrange(plotlist =  maps,labels = "AUTO",common.legend = T)
 
+#versao pro SUPMAT
+
+legend <- get_legend(maps[[1]])
 
 
-ggsave(filename = "figures/exploratory_Trade_agri_expansion_bin_relaviteBaseline2050_IT.jpeg",width = 25.4,height = 14.288,units = "cm",plot = global_maps_it,bg ="white")
+global_maps_it <- ggarrange(plotlist =  maps,nrow = 4,common.legend = T,legend="top")+
+  theme(plot.margin = margin(0,0,0,0, "cm")) 
+
+
+
+
+ggsave(filename = "figures_paper/agri_expansion_IT.jpeg",width = 16,height = 20,units = "cm",plot = global_maps_it,bg ="white")
 
 
 #### espacializando EC #########################################################
@@ -216,7 +229,8 @@ for (i in 1:length(agri_expan_files)){
       y = "",
       caption = scen[i])+
     #ggtitle(paste(,scen[i]))+
-    theme_map()
+    theme_map()+
+    theme(plot.margin = margin(-0.5,0.1,0,-0.5, "cm")) 
   #theme( legend.position = "none")
   l<- get_legend(map, position = NULL)
   
@@ -230,20 +244,21 @@ for (i in 1:length(agri_expan_files)){
 }
 
 
-global_maps_ec <- ggarrange(plotlist =  maps,labels = "AUTO",common.legend = T)
+# global_maps_ec <- ggarrange(plotlist =  maps,labels = "AUTO",common.legend = T)
 
-global_maps_ec2 <- ggarrange(plotlist =  maps,labels = "AUTO",common.legend = T,
-                             nrow = 4)
+global_maps_ec2 <- ggarrange(plotlist =  maps,common.legend = T,
+                             nrow = 4)+
+  theme(plot.margin = margin(0,0,0,0, "cm")) 
 
-global_maps_ec3 <- ggarrange(plotlist =  maps[1:2],labels = "AUTO",common.legend = T,nrow = 2)
+# global_maps_ec3 <- ggarrange(plotlist =  maps[1:2],labels = "AUTO",common.legend = T,nrow = 2)
 
-ggsave(filename = "figures/exploratory_Trade_agri_expansion_bin_relaviteBaseline2050_EC.jpeg",width = 25.4,height = 14.288,units = "cm",plot = global_maps_ec,bg ="white")
+# ggsave(filename = "figures/exploratory_Trade_agri_expansion_bin_relaviteBaseline2050_EC.jpeg",width = 25.4,height = 14.288,units = "cm",plot = global_maps_ec,bg ="white")
+# 
+# 
+# ggsave(filename = "figures/exploratory_Trade_agri_expansion_bin_relaviteBaseline2050_EC_vert.jpeg",width = 14.288,height = 25.4,units = "cm",plot = global_maps_ec2,bg ="white")
 
 
-ggsave(filename = "figures/exploratory_Trade_agri_expansion_bin_relaviteBaseline2050_EC_vert.jpeg",width = 14.288,height = 25.4,units = "cm",plot = global_maps_ec2,bg ="white")
-
-
-ggsave(filename = "figures/exploratory_Trade_agri_expansion_bin_relaviteBaseline2050_EC_vert_subset.jpeg",width = 15,height = 15,units = "cm",plot = global_maps_ec3,bg ="white")
+ggsave(filename = "figures_paper/agri_expansion_EC.jpeg",width = 16,height = 20,units = "cm",plot = global_maps_ec2,bg ="white")
 
 #### espacializando EC #########################################################
 
@@ -297,7 +312,8 @@ for (i in 1:length(agri_expan_files)){
       y = "",
       caption = scen[i])+
     #ggtitle(paste(,scen[i]))+
-    theme_map()
+    theme_map()+
+    theme(plot.margin = margin(-0.5,0.1,0,-0.5, "cm"))
   #theme( legend.position = "none")
   l<- get_legend(map, position = NULL)
   
@@ -310,8 +326,9 @@ for (i in 1:length(agri_expan_files)){
   
 }
 
-global_maps_bd <- ggarrange(plotlist =  maps,labels = "AUTO",common.legend = T)
+global_maps_bd <- ggarrange(plotlist =  maps,common.legend = T,nrow = 4)+
+  theme(plot.margin = margin(0,0,0,0, "cm"))
 
 
 
-ggsave(filename = "figures/exploratory_Trade_agri_expansion_bin_relaviteBaseline2050_BD.jpeg",width = 25.4,height = 14.288,units = "cm",plot = global_maps_bd,bg ="white")
+ggsave(filename = "figures_paper/agri_expansion_BD.jpeg",width = 16,height = 20.288,units = "cm",plot = global_maps_bd,bg ="white")
