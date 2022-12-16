@@ -146,11 +146,8 @@ library(egg)
 
 detach(package:egg,unload=TRUE)
 
-final <- ggarrange(metricas_grid_BTC_base,metricas_grid_c,common.legend = T,nrow = 2)
+final <- ggarrange(metricas_grid_BTC_base,metricas_grid_c,common.legend = T,nrow = 2,align =  "hv")
 
-ggarrange(metricas_grid_BTC_base,metricas_grid_c,common.legend = T,nrow = 2)
-
-ggarrange(metricas_grid_BTC_base,metricas_grid_c)
 
 ggsave(filename = "figures_paper/exploratory_Trade_relative_values_heatmap.jpeg",width = 9,height = 18,units = "cm",plot = final,bg ="white")
 
