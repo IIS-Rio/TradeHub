@@ -52,6 +52,9 @@ plot(st_geometry(world2))
 
 st_write(obj = world2,"country_boundaries/country_boundaries.shp")
 
+#---- preparando pra plotar ----------------------------------------------------
+
+world2 <- st_read("country_boundaries/country_boundaries.shp")
 
 # agregando por regioes
 

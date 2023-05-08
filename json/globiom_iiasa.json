@@ -11,12 +11,12 @@
 // INPUT-OUTPUT ----------------------------------------------------------------
 	"io": {
 	  "plangea_path": "/dados/pessoal/francisco/plangea-pkg/",
-	  "base_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/globiom_iiasa_TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2/",
+	  "base_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/globiom_iiasa_baseline/",
 		"rawdata_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/",
 		"lu_relative_path": "land-use/",
 		"past_lu_relative_path": "",
 		"ecoregions_relative_path": "",
-		"future_lu_relative_path": "land-use-2050/TH_TFELIM_TCREDU_BIOD_TECH_DEM_SPA0_SSP2",
+		"future_lu_relative_path": "land-use-2050/TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2/",
 		"pa_relative_path": "",
 		"variables_relative_path": "variables/",
 		"species_relative_path": "species/",
@@ -151,7 +151,7 @@
 		  "bd_variable_name": "bd",
 		  "bd_classes": ["A", "B", "M", "R"],
 		  "bd_subfolders": ["amphibians", "birds", "mammals", "reptiles"],
-		  "threads_harmonize": 60,
+		  "threads_harmonize": 8,
 		  "spp_table": {
 		    "spp_filename": "habitat_table_marginal_excluded_ok.csv",
 		    "spp_names_column": "taxonid",
@@ -214,13 +214,15 @@
 // SUBREGIONS -----------------------------------------------------------------
 	"subregions": {
 	  "include_subregion_scenarios": false,
-	  "subregion_zoning_names": ["states", "ecoregions"],
-	  "subregion_relative_paths": ["subregions/", "land-use/ecoregions/"],
-	  "subregion_raster_names": ["states-code.tif", "Ecoregions_reclassificado.tif"],
-	  "subregion_names_tables": ["states-code.csv", "er_classes.csv"],
-	  "raster_code_columns": ["CODE", "class"],
-	  "subregion_name_columns": ["NAME", "er"],
-	  "subregion_zoning_combinations": ["", ["states", ""], ["ecoregions", ""], ["states", "ecoregions", ""]]
+	  "subregion_zoning_names": ["regions"],
+	  "subregion_relative_paths": ["subregions/"],
+	  "subregion_raster_names": ["world_11_regions.tif"],
+	  "subregion_names_tables": ["region_code.csv"],
+	  "raster_code_columns": ["raster_id"],
+	  "subregion_name_columns": ["region"],
+	  "subregion_zoning_combinations": [["regions", ""], ""]
+	  
+	  
 	},
 
 
@@ -243,8 +245,8 @@
 		  "restoration-constraints-per-states-modified.csv",
 		  "restoration-constraints-per-ecoregion-total.csv"
 		],
-		"subregion_user_defined_code_columns": ["CODE", "class"],
-    "subregion_user_defined_value_columns": ["targets_km2", "total"],
+		"subregion_user_defined_code_columns": [""],
+    "subregion_user_defined_value_columns": [""],
 		"subregion_user_defined_target_sense_columns": ["", ""],
     // SUBREGION ECONOMETRIC (one entry here per entry in subregion_zoning_names)
 		"subregion_econometric_targets": [false, false],

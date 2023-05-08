@@ -77,7 +77,7 @@ for (i in 1:length(scen_subset))  {
   
   l_r <- list.files(file.path(p2,l_dir),recursive = T,full.names = T)
   
-  # exportando ano 2050
+  # exportando ano 2020
   
   p3 <- file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea","land_uses_2020",scen_to_keep[i])
   
