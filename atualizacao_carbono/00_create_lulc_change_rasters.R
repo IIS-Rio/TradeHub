@@ -53,7 +53,7 @@ for (scen in scens) {
   ant_future_raster_names = grep(pattern = paste0(scen, '/', ant_classes, collapse = "|"), x = future_lulc, value = T)
   # delta agri
     ant_future_agri = rast(grep(pattern = "agri",x = ant_future_raster_names,value = T))
-    
+      
     ant_current_agri = ant_current_rasters[[1]]
   
     # Creating raster of subtraction of natural LCs (future - present)
@@ -61,7 +61,7 @@ for (scen in scens) {
   
   # Saving results
   
-    #writeRaster(x = x, filename = paste0("../iis_data/tradehub/Deltas/delta_", scen, ".tif"))
+ #writeRaster(x = x, filename = paste0("../iis_data/tradehub/Deltas/delta_", scen, ".tif"))
   
   writeRaster(x = x2, filename = paste0("../data_carbono/Deltas/delta_agri/delta_agri_", scen, ".tif"),overwrite=T)
   
