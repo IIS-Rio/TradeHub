@@ -78,6 +78,6 @@ for (scen in scens) {
   #writeRaster(x = x, filename = paste0("../iis_data/tradehub/Deltas/delta_", scen, ".tif"))
   
   writeRaster(x = x3, filename = paste0("../data_carbono/Deltas/delta_past/delta_past_", scen, ".tif"))
-  
+         
   
 }

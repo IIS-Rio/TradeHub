@@ -51,7 +51,7 @@ emission_factors <- read.csv("../data_carbono/Restoration_transition_matrix_Fore
 class_transitions <- unique(emission_factors$Transition_type)
 
 # pegando valor das transicoes
-
+# isso ta estranho, tem polar e tropical no mesmo role
 uniqueC <- unique(emission_factors[,1:5])
 names(uniqueC)[2] <- "transition_type"
 
@@ -164,10 +164,11 @@ adjusted_df_l <- pivot_longer(data = adjusted_df_c,cols =c( 12:13))%>%
   rename_at(vars(13), ~paste0("C_ton_ha"))
 
 # nao tem todas as combinacoes de classes na tabela de ref. rever depois!
-
+# tem q rever os NAs tb!
 
 
 # 5) Fazer a soma total para obter o aumento de carbono sequestrado em 2050 (para conservação usar o do Plangea)
 # 6) Fazer o zonal para as 11 regiões mundiais
 
 
+summary(as.numeric(adjusted_df_l$C_ton_ha))
