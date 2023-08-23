@@ -57,49 +57,6 @@ class_transitions <- unique(emission_factors$Transition_type)
 # script 17 nature map github
 # preenche algumas lacunas
 
-# Dictionary of GEZ
-# Be aware! No intersection regions: Polar, Water, Tropical desert, Subtropical desert. 
-
-# OBS Chico: nao ter essas interseccoes eh um problema, pois tem restauracao nessas areas!
-
-dictionary = data.frame(df_gez = sort(unique(adjusted_df_l$GEZ_name)), 
-                        trans_tbl_gez = c("Boreal coniferous ", 
-                                          "Boreal mountain",
-                                          "Boreal tundra woodland", 
-                                          NA, 
-                                          NA,
-                                          "Subtropical dry forests", 
-                                          "Sub-tropical humid forests",
-                                          "Subtropical mountain system", 
-                                          "Subtropical steppe",
-                                          "Temperate continental",
-                                          "Temperate desert",
-                                          "Temperate mountain",
-                                          "Temperate oceanic",
-                                          "Temperate steppe", 
-                                          NA,
-                                          "Tropical dry forest",
-                                          "Tropical moist deciduous forest",
-                                          "Tropical mountain systems",
-                                          "Tropical rainforest",
-                                          "Tropical shrublands",
-                                          NA))
-sort(unique(emission_factors$GEZ_name))
-
-emission_factors$Continent[emission_factors$Continent=="Americans"] = "Americas"
-
-# Joining all dictionaries (one dic to rule them all)
-
-emission_factors2 = left_join(emission_factors, dictionary,by = c("GEZ_name" = "trans_tbl_gez"))
-
-#OK, mas vai ficar com NAs nas classes que nao tem valor
-      
-
-# pegando valor das transicoes
-# isso ta estranho, tem polar e tropical no mesmo role
-uniqueC <- unique(emission_factors2[,c(1:5,8)])
-names(uniqueC)[2] <- "transition_type"
-names(uniqueC)[5] <- "C_ton_ha" 
 
 # Input data -------------------------------------------------------------------
  
@@ -204,13 +161,63 @@ adjusted_df_l <- pivot_longer(data = adjusted_df_c,cols =c( 12:13))%>%
   left_join(meta_cont_division,by = join_by(ContinentalDiv == code))%>%
   rename(Continent=region  ) %>%
   left_join(gez[,1:2],by = join_by(GlobalEcoZones == gez_code))%>%
-  rename(GEZ_name=gez_name  )%>%
-  # adicionando carbono (ta dando merda uma linha tem multiplas combinacoes)
+  rename(GEZ_name=gez_name  )
+  
+
+# Dictionary of GEZ
+# Be aware! No intersection regions: Polar, Water, Tropical desert, Subtropical desert. 
+  
+  # OBS Chico: nao ter essas interseccoes eh um problema, pois tem restauracao nessas areas!
+  
+dictionary = data.frame(df_gez = sort(unique(adjusted_df_l$GEZ_name)), 
+                          trans_tbl_gez = c("Boreal coniferous ", 
+                                            "Boreal mountain",
+                                            "Boreal tundra woodland", 
+                                            NA, 
+                                            NA,
+                                            "Subtropical dry forests", 
+                                            "Sub-tropical humid forests",
+                                            "Subtropical mountain system", 
+                                            "Subtropical steppe",
+                                            "Temperate continental",
+                                            "Temperate desert",
+                                            "Temperate mountain",
+                                            "Temperate oceanic",
+                                            "Temperate steppe", 
+                                            NA,
+                                            "Tropical dry forest",
+                                            "Tropical moist deciduous forest",
+                                            "Tropical mountain systems",
+                                            "Tropical rainforest",
+                                            "Tropical shrublands",
+                                            NA))
+
+emission_factors$Continent[emission_factors$Continent=="Americans"] = "Americas"
+
+# Joining all dictionaries (one dic to rule them all)
+
+emission_factors2 = left_join(emission_factors, dictionary,by = c("GEZ_name" = "trans_tbl_gez"))
+
+#OK, mas vai ficar com NAs nas classes que nao tem valor
+
+# pegando valor das transicoes
+
+uniqueC <- unique(emission_factors2[,c(1:5,8)])
+names(uniqueC)[2] <- "transition_type"
+names(uniqueC)[5] <- "C_ton_ha" 
+
+  
+  
+  adjusted_df_l <- adjusted_df_l%>% 
+# adicionando carbono (ta dando merda uma linha tem multiplas combinacoes)
   left_join(uniqueC,by = c("GEZ_name" = "df_gez","IPCC_climate_zone","transition_type","Continent") )%>%
   #rename_at(vars(13), ~paste0("C_ton_ha"))%>%
   #limpar NAS
   filter(!is.na(ClimateZones) & !is.na(ContinentalDiv) & !is.na(GlobalEcoZones)& !is.na(world_11_regions))%>%
   mutate(C_ton_ha=as.numeric(C_ton_ha))
+
+
+
 
 
 summary(adjusted_df_l)# oq fazer com esses NAs!
@@ -227,7 +234,6 @@ miss_data <- adjusted_df_l%>%
 # OBS: ########################################################################
 # nao tem todas as combinacoes de classes na tabela de ref. rever depois!
 # tem q rever os NAs tb! 
-# parece q algumas classes foram simplificadas, precisaria simplificar tb, mas precisa entender pq, pra justificar! 
 ################################################################################
 
 # 5) Fazer a soma total para obter o aumento de carbono sequestrado em 2050 (para conservação usar o do Plangea)
