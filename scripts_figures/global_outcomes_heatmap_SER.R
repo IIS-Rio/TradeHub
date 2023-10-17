@@ -21,11 +21,14 @@ val_l <- read.csv("output_tables/resultados_metricas_cenarios.csv")
 metricas <- unique(val_l$metric)
 
 
+#Percentage Relative to BAU = ((Opportunity Cost of Scenario - Opportunity Cost of BAU) / Opportunity Cost of BAU) * 100
+
 val_l <- val_l %>%
   filter(metric== unique(metric)) %>%
-  # calculando prop. em relacao ao BAU em modulo
-  mutate(relative_to_BAU_2050=value/abs(value[label_scen=="BAU"]))
- 
+  # calculando prop. em relacao ao BAU em modulo e invertendo sinal
+  mutate(
+    relative_to_BAU_2050=((value-value[label_scen=="BAU"])/(value[label_scen=="BAU"])*100*-1))
+
 
 # adicionando coluna pra separar os cenarios
 
@@ -35,14 +38,14 @@ val_l$scen_type[c(grep(pattern = "+ C",x = val_l$label_scen))] <- "C"
 val_l$scen_type[c(grep(pattern = "+ C",x = val_l$label_scen,invert = T))] <- "baseline"
 
 
-# subtraindo 1 do BTC base fica boa a relacao
-val_l$relative_to_BAU_2050_rc <- NA
-
-val_l$relative_to_BAU_2050_rc[val_l$scen_type=="baseline"]<-  val_l$relative_to_BAU_2050[val_l$scen_type=="baseline"] +1
-
-
-val_l$relative_to_BAU_2050_rc[val_l$scen_type!="baseline"]<-  val_l$relative_to_BAU_2050[val_l$scen_type=="baseline"] 
-
+# # subtraindo 1 do BTC base fica boa a relacao
+# val_l$relative_to_BAU_2050_rc <- NA
+# 
+# val_l$relative_to_BAU_2050_rc[val_l$scen_type=="baseline"]<-  val_l$relative_to_BAU_2050[val_l$scen_type=="baseline"] +1
+# 
+# 
+# val_l$relative_to_BAU_2050_rc[val_l$scen_type!="baseline"]<-  val_l$relative_to_BAU_2050[val_l$scen_type=="baseline"] 
+# 
 # order by converted area
 
 val_l$label_scen <-factor(val_l$label_scen,levels = rev(c("exacerb. lib. + BTC baseline","tarif.elim.+ BTC baseline","transp.cost. red + BTC baseline","frict.&reconfig. + BTC baseline","BAU","exacerb. lib. + C","tarif.elim.+ C","transp.cost. red + C","frict.&reconfig. + C","BAU + C")))
@@ -62,8 +65,11 @@ l <- c("Fr","Tr","Ta","ETL")
 val_l <- val_l %>%
   group_by(across(4))%>%
   filter(metric==metric)%>%
-  mutate(relative_to_BAU_2050_sc=relative_to_BAU_2050/max(abs(relative_to_BAU_2050)))%>%
-  mutate(diff= relative_to_BAU_2050_sc - relative_to_BAU_2050_sc[label_scen=="BAU"] )
+  mutate(
+    #relative_to_BAU_2050_sc=relative_to_BAU_2050/max(abs(relative_to_BAU_2050))
+    relative_to_BAU_2050_sc = scale(relative_to_BAU_2050, center = min(relative_to_BAU_2050), scale = max(relative_to_BAU_2050) - min(relative_to_BAU_2050)) * 2 - 1)
+  # %>%
+  # mutate(diff= relative_to_BAU_2050_sc - relative_to_BAU_2050_sc[label_scen=="BAU"] )
 
 
 val_l$name <- gsub(pattern = ".val",replacement = "",x = val_l$name)
@@ -81,7 +87,7 @@ metricas_grid_BTC_base <- val_l%>%
   filter(!scen_type=="C")%>%
   #mutate(relative_to_BAU_2050=relative_to_BAU_2050/max(relative_to_BAU_2050))%>%
   ggplot(aes(y = label_scen, x=name)) +
-  geom_raster(aes(fill = relative_to_BAU_2050_rc))+
+  geom_raster(aes(fill = relative_to_BAU_2050_sc))+
   scale_fill_scico(palette = "roma",limits=limit ,name="Rel. var BAU")+ 
   scale_y_discrete(labels=l)+
   #scale_fill_viridis(name = "Rel. BAU",breaks = my_breaks,trans=scales::pseudo_log_trans(sigma = 0.001))+
@@ -104,7 +110,7 @@ metricas_grid_c <- val_l%>%
   filter(scen_type=="C")%>%
   #mutate(relative_to_BAU_2050=relative_to_BAU_2050/max(relative_to_BAU_2050))%>%
   ggplot(aes(y = label_scen, x=name)) +
-  geom_raster(aes(fill = relative_to_BAU_2050_rc))+
+  geom_raster(aes(fill = relative_to_BAU_2050_sc))+
   scale_fill_scico(palette = "roma",limits=limit , name="Rel. var BAU")+ 
   scale_y_discrete(labels=l2)+
   #scale_fill_viridis(name = "Rel. BAU",breaks = my_breaks,trans=scales::pseudo_log_trans(sigma = 0.001))+
@@ -114,7 +120,7 @@ metricas_grid_c <- val_l%>%
   #scale_fill_distiller(type = "div", limit = limit)+
   
   #facet_wrap(~label_scen)+
- # rotate_x_text(angle = 90)+
+  # rotate_x_text(angle = 90)+
   xlab("")+
   ylab("")+
   ggtitle("C") +
@@ -145,14 +151,19 @@ legend <- val_l%>%
 
 legend2 <- get_legend(legend)
 
-library(egg)
+# library(egg)
+# 
+# detach(package:egg,unload=TRUE)
 
-detach(package:egg,unload=TRUE)
+# vertival
 
 final <- ggarrange(metricas_grid_BTC_base,metricas_grid_c,common.legend = T,nrow = 2,align =  "hv")
 
 
-ggsave(filename = "figures_paper/exploratory_Trade_relative_values_heatmap.jpeg",width = 9,height = 18,units = "cm",plot = final,bg ="white")
+final2 <- ggarrange(metricas_grid_BTC_base,metricas_grid_c,common.legend = T,nrow = 2,align =  "hv")
+
+
+ggsave(filename = "figures_paper/exploratory_Trade_relative_values_heatmapSER.jpeg",width = 16,height = 9,units = "cm",plot = final2,bg ="white")
 
 
 # continuar! ainda falta ajustar detalhes pq a escala de -1,1 nao ta funcionando. e preciso rever como calcular a diferença!! mas no geral, pra esse global, as barras sao melhores pra vizualizar

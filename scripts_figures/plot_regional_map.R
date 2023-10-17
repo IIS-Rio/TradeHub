@@ -10,7 +10,7 @@ countries <-  st_read(file.path("/dados/pessoal/francisco/TradeHub/country_bound
 
 
 regi_map <- countries %>%
-  mutate(name = factor(region, levels=rev(c('LAC', 'SSA', 'CSI','SEA','MNA','SAS','EUR','EAS','USA','OCE','CAN')))) %>%
+  mutate(AggrgtR = factor(AggrgtR , levels=rev(c('LAC', 'SSA', 'CSI','SEA','MNA','SAS','EUR','EAS','USA','OCE','CAN')))) %>%
   ggplot() +
     geom_sf(color = "black",aes(fill = AggrgtR))+
     theme_map()+
@@ -23,4 +23,4 @@ regi_map <- countries %>%
     theme(legend.position = "none")
 
 
-ggsave(filename = "figures_paper/region_map.jpeg",width = 22,height = 12,units = "cm",plot = regi_map,bg ="white")
+ggsave(filename = "figures_paper/region_map.jpeg",width = 32,height = 18,units = "cm",plot = regi_map,bg ="white")
