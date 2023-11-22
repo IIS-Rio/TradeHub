@@ -7,20 +7,57 @@
 library(terra)
 library(dplyr)
 library(tidyverse)
+library(sf)
+library(raster)
+library(fasterize)
 
 # Reading original zonings -----------------------------------------------------
-#
-ipcc_climatic = rast("../data_carbono/ClimateZones.tif")
-cont_div = rast("../data_carbono/ContinentalDiv.tif")
-geo_eco = rast("../data_carbono/GlobalEcoZones.tif")
-world_regions = rast("../data_carbono/world_11_regions.tif")
-base_ras = 0 * world_regions
+
+ipcc_climatic = raster("bd_iis/IPCC/IPCC_Climate_Zones_Map_raster/ipcc_zones_2017.tif")
+# adjust pj
+rbase <- raster("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use/agriculture.tif")
+rbase <- rbase/rbase
+# ajustando projecao
+ipcc_climatic_pj <- project(ipcc_climatic,rbase,method="near")
+
+writeRaster(ipcc_climatic_pj,"/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/ipcc_zones_2017.tif",overwrite=T)
+
+cont_div = st_read("bd_iis/NatureMap/ContinentalDivision/continents_20210725.shp")%>%
+  st_transform(crs(rbase))
+
+cont_div_df <- st_drop_geometry(cont_div)
+
+write.csv(cont_div_df,"/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/continents_20210725.csv",row.names = F)
+
+# rasterize
+
+cont_div <- fasterize(sf = cont_div,raster = rbase)
+
+writeRaster(cont_div,"/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/continents_20210725.tif")
+
+geo_eco =st_read("bd_iis/GEZ/gez_2010_wgs84.shp") %>%
+  st_transform(crs(rbase))
+
+st_write(geo_eco,"/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/gez_2010.shp")
+
+
+geo_eco_r <- fasterize(geo_eco,rbase,field="gez_code")
+
+writeRaster(geo_eco_r,"/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/GlobalEcoZones.tif")
+
+geo_eco_df <- st_drop_geometry(geo_eco)
+
+write.csv(geo_eco_df,"/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/gez_2010.csv",row.names = F)
+
+world_regions = rast("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/subregions/world_11_regions.tif")
+
+#base_ras = 0 * world_regions
 
 # tabelas
-
-gez <- read.csv("../data_carbono/gez_2010_wgs84.csv",sep=";")
-gez$gez_code <-as.double( gsub(pattern = ",",replacement = ".",x = gez$gez_code))
-cont_div_df <- read.csv("../data_carbono/continents_20210725.csv",sep=";")
+# bdis?gez
+gez <- read.csv("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/gez_2010.csv")
+#gez$gez_code <-as.double( gsub(pattern = ",",replacement = ".",x = gez$gez_code))
+cont_div_df <- read.csv("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/continents_20210725.csv")
 
 meta_CLI = data.frame(name = c("Tropical Montane",
                                "Tropical Wet",
@@ -39,13 +76,12 @@ meta_CLI = data.frame(name = c("Tropical Montane",
 meta_cont_division = data.frame(code = as.numeric(as.factor(cont_div_df$region2)), region = cont_div_df$region2)
 
 # reprojetando
+# ipcc_climatic_pj <- project(ipcc_climatic,base_ras,method="near")
+# # sao rasters com numeros, precisa converter pra nome das classes!
+# cont_div_pj <- terra::project(cont_div,base_ras,method="near")
+# geo_eco_pj <- project(geo_eco,base_ras,method="near")
 
-ipcc_climatic_pj <- project(ipcc_climatic,base_ras,method="near")
-# sao rasters com numeros, precisa converter pra nome das classes!
-cont_div_pj <- terra::project(cont_div,base_ras,method="near")
-geo_eco_pj <- project(geo_eco,base_ras,method="near")
-
-# lendo df base
+# lendo df base. esse aqui podemos atualizar com os novos dados da lera!
 
 emission_factors <- read.csv("../data_carbono/Restoration_transition_matrix_Forest_EF_ER_Values_20210823_shared.csv")
 

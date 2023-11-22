@@ -6,12 +6,12 @@ library(terra)
 # Input data -------------------------------------------------------------------
 
 # Listing current LULC rasters
-current_lulc = list.files(path = "../data_carbono/land-use/",
-                          pattern = ".tif$",
-                          full.names = T)
+current_lulc = list.files(path = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use",pattern = ".tif$",full.names = T)
 
 # Natural classes patterns
 nat_classes = c("forest", "other", "desert", "grassland", "shrubland", "wetland", "km_other")
+
+ant_classes <- c("agriculture","pasture")
 
 # Natural current LC
 nat_raster_names = grep(pattern = paste0(nat_classes, collapse = "|"), x = current_lulc, value = T)
@@ -20,14 +20,15 @@ nat_current_lc = app(nat_current_rasters, 'sum')
 
 # Anthropic current LU
 ant_raster_names = grep(pattern = paste0(ant_classes, collapse = "|"), x = current_lulc, value = T, invert = F)
+
 ant_current_rasters = rast(ant_raster_names)
 #ant_current_lc = app(nat_current_rasters, 'sum')
 
 # Listing future scenarios
-scens = list.dirs(path = "../data_carbono/land-use-2050/", recursive = F, full.names = F)
+scens = list.dirs(path = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-2050", recursive = F, full.names = F)
 
 # Listing future LULC rasters
-future_lulc = list.files(path = "../iis_data/tradehub/land-use-2050/",
+future_lulc = list.files(path = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-2050",
                          pattern = ".tif$",
                          full.names = T, recursive = T)
 
@@ -63,7 +64,7 @@ for (scen in scens) {
   
  #writeRaster(x = x, filename = paste0("../iis_data/tradehub/Deltas/delta_", scen, ".tif"))
   
-  writeRaster(x = x2, filename = paste0("../data_carbono/Deltas/delta_agri/delta_agri_", scen, ".tif"),overwrite=T)
+  writeRaster(x = x2, filename = paste0("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/Deltas/delta_agri/delta_agri_", scen, ".tif"),overwrite=T)
   
   # delta pastagem
   ant_future_past = rast(grep(pattern = "past",x = ant_future_raster_names,value = T))
@@ -77,7 +78,7 @@ for (scen in scens) {
   # Saving results
   #writeRaster(x = x, filename = paste0("../iis_data/tradehub/Deltas/delta_", scen, ".tif"))
   
-  writeRaster(x = x3, filename = paste0("../data_carbono/Deltas/delta_past/delta_past_", scen, ".tif"))
+  writeRaster(x = x3, filename = paste0("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/Deltas/delta_past/delta_past_", scen, ".tif"))
          
   
 }
