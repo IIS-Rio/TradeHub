@@ -36,18 +36,23 @@ future_lulc = list.files(path = "/dados/projetos_andamento/TRADEhub/trade_hub_pl
 for (scen in scens) {
   
   # Natural future LC
-  # nat_future_raster_names = grep(pattern = paste0(scen, '/', nat_classes, collapse = "|"), x = future_lulc, value = T)
-  # nat_future_rasters = rast(nat_future_raster_names)
-  # nat_future_lc = app(nat_future_rasters, 'sum')
+   nat_future_raster_names = grep(pattern = paste0(scen, '/', nat_classes, collapse = "|"), x = future_lulc, value = T)
+  nat_future_rasters = rast(nat_future_raster_names)
+   nat_future_lc = app(nat_future_rasters, 'sum')
   
   # Creating raster of subtraction of natural LCs (future - present)
-  # x = nat_future_lc - nat_current_lc
+  x = nat_future_lc - nat_current_lc
   
   # In which pixels is there a net restoration?
-  # net_restore_pixels = which(values(x, mat = F, dataframe = F) > 0)
+  #net_restore_pixels = which(values(x, mat = F, dataframe = F) > 0)
   
   # Testing which natural cover had an increase
   #plot((nat_future_rasters - nat_current_rasters) * (x > 0))
+  
+  # Saving results
+  #writeRaster(x = x, filename = paste0("../iis_data/tradehub/Deltas/delta_", scen, ".tif"))
+  
+  writeRaster(x = x, filename = paste0("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/Deltas/delta_rest/delta_rest_", scen, ".tif"))
   
   # antropic future LC
   

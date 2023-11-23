@@ -29,13 +29,22 @@ head(transitions_otn_df)
 
 names(transitions_otn_df) <- nms_otn
 
-# adicionando continent e gez
-transitions_otn_df$Continent <- "All"
-transitions_otn_df$GEZ <- "All"
+# adicionando continent e gez (aqui eh preciso criar as combinacoes, nao adianta ter all pq nao tem essa classe no raster!!)
+
+Continent <- unique(transitions_forests_df$Continent)
+GEZ <- unique(transitions_forests_df$GEZ)
+IPCC_climate_zone <- unique(transitions_forests_df$IPCC_climate_zone)
+
+df2add <- expand_grid(Continent,GEZ,IPCC_climate_zone)
+
+transitions_otn_df2 <- left_join(transitions_otn_df,df2add)
+
+# transitions_otn_df$Continent <- "All"
+# transitions_otn_df$GEZ <- "All"
 
 # juntando tudo
 
-transitions <- rbind(transitions_forests_df,transitions_otn_df[,-2])
+transitions <- rbind(transitions_forests_df,transitions_otn_df2[,-2])
 
 # substituindo nas por NAs, transformar colunas numericas, substituir NAs!
 
@@ -49,46 +58,53 @@ transitions <- transitions %>%
 transitions_NA <- transitions%>%
   filter_all(any_vars(is.na(.)))
 
+# so tem NA em polar moist/dry pra outros usos
+
 # ver quais classes preciso obter medias
 
-freq <- as.data.frame(table(transitions$IPCC_climate_zone,transitions$Previous_lu,transitions$Future_lu,transitions$Continent,transitions$GEZ))%>%
-  # filtrando f==0
-  filter(!Freq==0)
+#unique(paste0(transitions_NA$Previous_lu,"2",transitions_NA$Future_lu))
 
-names(freq) <- c("IPCC_climate_zone","Previous_lu","Future_lu","Continent","GEZ","Freq")
+
+# freq <- as.data.frame(table(transitions$IPCC_climate_zone,transitions$Previous_lu,transitions$Future_lu,transitions$Continent,transitions$GEZ))%>%
+#   # filtrando f==0
+#   filter(!Freq==0)
+
+#names(freq) <- c("IPCC_climate_zone","Previous_lu","Future_lu","Continent","GEZ","Freq")
 
 # media pra qndo nao tem continente
 
-mean_all <- transitions%>%
-  group_by(IPCC_climate_zone,Previous_lu,Future_lu)%>%
-  summarise(Final_Cstock_tonnes_ha=mean(Final_Cstock_tonnes_ha,na.rm=T),
-            CO2_eq = mean(CO2_eq,na.rm=T))
+# mean_all <- transitions%>%
+#   group_by(IPCC_climate_zone,Previous_lu,Future_lu)%>%
+#   summarise(Final_Cstock_tonnes_ha=mean(Final_Cstock_tonnes_ha,na.rm=T),
+#             CO2_eq = mean(CO2_eq,na.rm=T))
 
 # Polar dry e polar moist tem valor NA, precisa ter um nivel a menos!
 
 mean_lus <- transitions%>%
-  group_by(Previous_lu,Future_lu)%>%
+  group_by(Previous_lu,Future_lu,GEZ)%>%
   summarise(Final_Cstock_tonnes_ha=mean(Final_Cstock_tonnes_ha,na.rm=T),
             CO2_eq = mean(CO2_eq,na.rm=T))
 
 
 # pensar em como combinar essas medias! acho q uma sequencia de for serviria
 
-# rodar por linha
+# join
 
-for(i in seq_along(nrow(transitions_NA))){
-  
-  df <- transitions_NA[i,]
-  mean_carbon <- mean_all[mean_all$IPCC_climate_zone==df$IPCC_climate_zone&mean_all$Previous_lu==df$Previous_lu&mean_all$Future_lu==df$Future_lu,]
-  # condicional caso nao tenha valor na media acima  
-  if(is.na(mean_carbon$Final_Cstock_tonnes_ha)){
-    
-      mean_carbon2 <- mean_all[mean_all$Previous_lu==df$Previous_lu&mean_all$Future_lu==df$Future_lu,]
-      df$Final_Cstock_tonnes_ha <- mean(mean_carbon2$Final_Cstock_tonnes_ha,na.rm=T)
-      df$CO2_eq <- mean(mean_carbon2$CO2_eq,na.rm=T)
-      
-      # continuar!
-    
-  }
-  
-}
+transitions_NA_join <- left_join(transitions_NA[,-c(6:8)],mean_lus)
+
+transitions_NA_join$'Basis_carbon stock_EF_RF' <- "average value considering lus, Continent and GEZ"
+
+transitions_noNA <- transitions[complete.cases(transitions),]
+
+#nrow(transitions)==nrow(transitions_NA_join)+nrow(transitions_noNA)
+
+
+# juntando novamente
+
+transitions_completo <- rbind(transitions_NA_join,transitions_noNA)
+
+transitions_completo <- transitions_completo[complete.cases(transitions_completo),]
+
+# salvando
+
+write.csv(transitions_completo,"/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/Restoration_transition_matrix_equations_20210820.csv",row.names = F)
