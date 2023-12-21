@@ -1,0 +1,406 @@
+{
+
+// METADATA --------------------------------------------------------------------
+  "metadata": {
+    "title": "GLOBIOM-IIASA",
+    "study_area": "Global",
+    "project": "TradeHub"
+  },
+
+
+// INPUT-OUTPUT ----------------------------------------------------------------
+	"io": {
+	  "plangea_path": "/dados/pessoal/francisco/plangea-pkg/",
+//	  "base_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/globiom_iiasa_baseline/",
+		"rawdata_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/",
+		
+		// eu fiz antes com land-use 2020. Tem q ser 2050
+		"lu_relative_path": "land-use-regional_2050/",
+		"past_lu_relative_path": "",
+		"ecoregions_relative_path": "",
+//		"future_lu_relative_path": "land-use-2050/TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2/",
+		"pa_relative_path": "",
+		"variables_relative_path": "variables/",
+		"species_relative_path": "species/",
+		"processed_relative_path": "processed/",
+		"output_relative_path": "results/",
+		"solver_results_relative_path": "results/solver_runs/",
+		"post_processed_relative_path": "results/post_processed/",
+		"extra_scripts_relative_path": "scripts/"
+	},
+
+
+// LANDSCAPE FEATURES ----------------------------------------------------------
+	"landscape_features": {
+	  "land_use":{
+	    "class_names": ["AGR", "DES", "FOR", "NGR", "ICE", "IGN", "OTR", "OTN", "PAS", "SHR", "URB", "WET"],
+	  	"class_types": [  "A",   "N",   "N",   "N",   "I",   "I",   "N",   "N",   "A",   "N",   "I",   "N"],
+	  	"classes_raster_names":
+	  	["agriculture.tif",
+	  	"desert.tif",
+	  	"forest.tif",
+	  	"grassland.tif",
+	  	"ice.tif",
+	  	"ignored.tif",
+	  	"km_other_restored.tif",
+	  	"other_natland.tif",
+	  	"pasture.tif",
+	  	"shrubland.tif",
+	  	"urban.tif",
+	  	"wetland.tif"]
+	  },
+	  "original_areas":{
+	    "include_past": false,
+	    "past_class_names": "" ,
+	    "past_raster_names": "",
+	    "include_ecoregions": false,
+	    "ecoregions_raster_names": "",
+	    "failsafe_classes_to_fill": ""
+	  },
+	  "projected_areas":{
+	    "include_future": false,
+	    "future_class_names": ["", ""],
+	    "future_raster_names": ["", ""],
+	    "include_suitability": false,
+	    "suitability_raster_names": ["", ""],
+	    "failsafe_classes_to_fill": "",
+	    "include_prop_convert": false,
+	    "prop_convert_classes": ["", ""],
+      "prop_convert_raster_names": ["", ""]
+	  }
+	},
+
+
+// VARIABLES IN THE OBJECTIVE FUNCTION -----------------------------------------
+	"variables": {
+		"variable_names": ["cb", "it", "ec", "bd", "oc"],
+		"variable_types": [ "B",  "B",  "B",  "B",  "C"],
+		"variable_values": ["C",  "C",  "C",  "C",  "C"], // C for continuous, D for discrete, L for logical
+		"variable_weights": [ 1,    1,    1,    1,    1],
+		"variable_scaling_factors": ["", "", "", "", ""],
+		"ready_variables": [true, false, false, false, true],
+		"ready_variables_raster_names": [
+		  "CBD-carbon_layer_updated_reproj.tif",
+		  "",
+		  "",
+		  "",
+		  "CBD-opportunity_cost_reproj.tif"
+		  ],
+    "refresh_variables_script_names": [
+      "",
+      "",
+      "multi_calc_ec.R",
+      "",
+      ""
+      ],
+    "refresh_variables_function_call": [
+		  "",
+		  "",
+		  ["multi_calc_ec", "cfg", 0.25, "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/variables/ecoregions_2017_1000m_moll_resampled_50km.tif"],
+		  "",
+		  ""
+		],
+		"aggregated_values_script_names":[
+      "",
+      "",
+      "multi_ec_aggregate.R",
+      "",
+      ""
+      ],
+    "aggregated_values_function_call": [
+		  "",
+		  "",
+		  ["multi_ec_aggregate", "x_vals", "cfg", 0.25],
+		  "",
+		  ""
+		],
+
+		"problem_matrix":{
+	    "extra_matrix_raster_names": [""],
+	    "extra_matrix_types": [""]
+		},
+
+		"calc_oc": {
+		  "oc_variable_name": "",
+		  "oc_files": ["", ""],
+		  "oc_names": ["", ""],
+		  "corresponding_lu_classes": ["", ""],
+		  "adhoc_cost": 0,
+      "unc": {
+		    "calc_unc": false,
+		    "unc_rasters": ["", ""]
+		  }
+		},
+
+		"calc_it": {
+      "it_variable_name": "it",
+      "hfi": "hfi_2050_ssp2_resampled.tif",
+      "hfi_post": "hfi_2050_ssp2_resampled.tif",
+      "hfi_classes": ["AGR", "PAS"],
+      "hfi_weights": [4, 7],
+      "n_pixels" : 3, // number of pixels considered in move window algorithm
+      // Parameters in the Beyer et. al equation for computing IT (leaving null will use default values)
+      "gamma": null,
+      "beta": null,
+      "z": null,
+      // Assumed variations in the parameters above for purposes of uncertainties (leaving null will assume no variation in that parameter)
+      "delta_gamma": 0.04,
+      "delta_beta": 0.02,
+      "delta_z": 0.1
+      },
+
+		"calc_bd": {
+		  "bd_variable_name": "bd",
+		  "bd_classes": ["A", "B", "M", "R"],
+		  "bd_subfolders": ["amphibians", "birds", "mammals", "reptiles"],
+		  "threads_harmonize": 8,
+		  "spp_table": {
+		    "spp_filename": "habitat_table_marginal_excluded_ok.csv",
+		    "spp_names_column": "taxonid",
+		    "lu_names_column": "habitat_class",
+		    "include_absent_spp": true,
+		    "table_delim": ","
+		    },
+
+		  "calc_extra_constraints": false,
+		  "constraints_tables":{
+		    "upperelevation_table": "",
+		    "lowerelevation_table": "",
+		    "upperelevation_column": "upperelevation",
+		    "lowerelevation_column": "lowerelevation",
+		    "spp_names_column": "taxonid",
+		    "table_delim": ","
+		  },
+
+		  "constraints_raster":"",
+		  "z_std_dev": "0.1",
+
+		  "include_hab_pot_areas": false,
+	    "hab_pot_areas_file": [""], // must provide the absolute path to file
+
+	    "include_hab_now_areas": false,
+	    "hab_now_areas_file": [""] // must provide the absolute path to file
+		}
+	},
+
+// VARIABLE UNCERTAINTIES ------------------------------------------------------
+  "uncertainties":{ // in all quantities under uncertainties, add one entry for each variable
+    "quadratic_propagation": [true, true, true, true, true],
+    "confidence_level": [true, true, true, true, true],
+  	"ready_uncertainties": [false, false, false, false],
+		"ready_uncertainties_raster_names": [
+		  "",
+		  "",
+		  "",
+		  "",
+		  ""
+		  ],
+		"missing_uncertainties_adhoc_threshold": 0.1
+  },
+
+// SCENARIOS -------------------------------------------------------------------
+	"scenarios": {
+	  "use_gurobi_solver": false,
+	  "rescale_ben": true,
+	  "use_threads": false,
+		"problem_type": ["R", "D"],
+		"benchmark_scenarios": ["ec"],
+		"refresh_nsteps_per_benchmark": [1],
+		"tradeoff_curve_percent_step_size": 1,
+		"tradeoff_curve_percent_nstep_range": [1, 1],
+		"include_random_scenario": false,
+		"include_uniform_scenario": false
+	},
+
+
+// SUBREGIONS -----------------------------------------------------------------
+	"subregions": {
+	  "include_subregion_scenarios": false,
+	  "subregion_zoning_names": ["regions"],
+	  "subregion_relative_paths": ["subregions/"],
+	  "subregion_raster_names": ["world_11_regions.tif"],
+	  "subregion_names_tables": ["region_code.csv"],
+	  "raster_code_columns": ["raster_id"],
+	  "subregion_name_columns": ["region"],
+	  "subregion_zoning_combinations": [["regions", ""], ""]
+	  
+	  
+	},
+
+
+// TARGETS ---------------------------------------------------------------------
+	"targets": {
+	  // WHOLE-LANDSCAPE TARGETS
+    "landscape_target_names": ["WORLD"],
+		"landscape_target_values": [""],
+		"landscape_target_types": ["area"],
+		"landscape_target_senses": ["<="],
+		// SUBREGION FLAT TARGETS (one entry here per entry in subregion_zoning_names)
+		"subregion_flat_targets": [false, false],
+    "subregion_flat_target_limits": [0.5, ""],
+    "subregion_flat_target_types": ["area", ""],
+    "subregion_flat_target_senses": ["<=", "<="],
+		// SUBREGION USER DEFINED (one entry here per entry in subregion_zoning_names)
+		"subregion_user_defined_targets": [false, false],
+		"subregion_user_defined_target_types": ["area", "area"],
+		"subregion_user_defined_tables": [
+		  "restoration-constraints-per-states-modified.csv",
+		  "restoration-constraints-per-ecoregion-total.csv"
+		],
+		"subregion_user_defined_code_columns": [""],
+    "subregion_user_defined_value_columns": [""],
+		"subregion_user_defined_target_sense_columns": ["", ""],
+    // SUBREGION ECONOMETRIC (one entry here per entry in subregion_zoning_names)
+		"subregion_econometric_targets": [false, false],
+		"subregion_econometric_target_types": ["prod", "area"],
+		"subregion_econometric_tables": "",
+		"subregion_econometric_code_columns": "",
+    "subregion_econometric_value_columns": "",
+		"subregion_econometric_target_sense_columns": ["", ""],
+    // SUBREGION ECOSYSTEMIC (one entry here per entry in subregion_zoning_names)
+		"subregion_ecosystemic_targets": [false, false],
+    "subregion_ecosystemic_target_types": ["area", "area"],
+    "subregion_ecosystemic_target_senses": ["<=", "<="],
+		"subregion_ecosystemic_hl_par": 0,
+    "subregion_ecosystems_minimum_par": 0,
+    "power_range_collapse_risk_ecosyst": false
+	},
+
+
+// BOUNDS ----------------------------------------------------------------------
+	"bound_limits": {
+	  "constant_values": [1],
+	  "spatial-modifier_rasters": [""],
+	  "spatial-modifier_classes": [""]
+	  },
+
+
+// POST-PROCESSING -------------------------------------------------------------
+	"post_process": {
+	  "run_postprocess": true,
+	  "threads_post": 1,
+	  "post_processing_only": false,
+
+	  "aggregate_table": {
+	    "run_module": true,
+	    "include_lu_cols": true,
+	     "use_future_scenario": true,
+	     "make_cumulative_table": false,
+	     "future_land_use": {
+         "class_names": ["AGR", "DES", "FOR", "NGR", "ICE", "IGN", "OTR", "OTN", "PAS", "SHR", "URB", "WET"],
+	  	   "class_types": [  "A",   "N",   "N",   "N",   "I",   "I",   "N",   "N",   "A",   "N",   "I",   "N"],
+	       "classes_raster_names":
+	       ["agriculture.tif",
+        	"desert.tif",
+        	"forest.tif",
+        	"grassland.tif",
+        	"ice.tif",
+        	"ignored.tif",
+        	"km_other_restored.tif",
+        	"other_natland.tif",
+        	"pasture.tif",
+        	"shrubland.tif",
+        	"urban.tif",
+        	"wetland.tif"]
+	     }
+	  },
+
+	  "scenarios_maps": {
+	    "run_module": false
+	  },
+
+	  "species_table": {
+	    "run_module": false
+	  },
+
+	  "it_table": {
+	    "run_module": false,
+	    "use_cumulative_tbl": false
+	  },
+
+	  "gradient_maps": {
+	    "run_module": false,
+	    "gradient_colors": ["#E8384F", "#FD817D", "#FDAE33", "#EECC16", "#A4C61A", "#62BB35", "#37A862", "#208EA3", "#4178BC"],
+	    "threshold": 0,
+	    "stand": false,
+	    "png": true
+	  },
+    "habitat_tables": {
+      "run_module": false,
+      "use_all_scenarios": false,
+      "include_targets": ["WRLD", "CBD"],
+      "include_bounds_limits": [0.5, 1],
+      "include_benchmark_scenarios": ["cb", "bd", ["cb", "oc"], ["cb", "bd", "oc"]],
+      "include_variables_weights": [1, [1, 10], 1],
+      "include_tradeoff_curve_values": [0.25, 1],
+      "subregion_combinations": [["states", ""], ""]
+	  },
+	  "weight_graphics": {
+	    "run_module": false,
+	    "use_cumulative_tbl": false,
+	    "w_colors": ["#E8384F", "#FD817D", "#FDAE33", "#EECC16", "#A4C61A", "#62BB35", "#37A862", "#208EA3", "#4178BC"],
+	    "plot": true,
+	    "x_var": ["bd"],
+	    "x_lab": ["biodiversity"],
+	    "y_var": ["cb"],
+	    "y_lab": ["carbon"],
+	    "col_var": ["oc"],
+	    "col_lab": ["opportunity cost"],
+	    "include_blim_values": [1],
+	    "tradeoff_curves": [0.5],
+	    "print_png_only" : true
+	  },
+
+	  "variable_tradeoff":{
+	    "run_module": false,
+	    "variables": ["cb", "bd", "oc", "it", "ec"],
+	    "use_cumulative_tbl": false,
+	    "colors": ["#E8384F", "#FD817D", "#FDAE33", "#EECC16", "#A4C61A", "#62BB35", "#37A862", "#208EA3", "#4178BC"]
+	  },
+
+	  "subregion_aggregate_tables": {
+	    "run_module": false,
+	    "use_all_scenarios": false,
+	    "include_lu_cols": true,
+      "include_targets": ["WRLD", "CBD"],
+      "include_bounds_limits": [0.5, 1],
+      "include_benchmark_scenarios": ["cb", "bd", ["cb", "oc"], ["cb", "bd", "oc"]],
+      "include_variables_weights": [1, [1, 10], 1],
+      "include_tradeoff_curve_values": [0.25, 1],
+      "subregion_combinations": [["states", ""], ""]
+	  },
+
+	  "radar_chart": {
+	    "run_module": false,
+	    "variables": ["cb", "bd", "oc", "it", "ec"],
+	    "zero_min_vals": true,
+	    "use_cumulative_tbl": false,
+	    "radar_chart_params":{
+	      "pcol": [0.2,0.5,0.5,0.9],
+	      "pfcol": [0.2,0.5,0.5,0.5],
+	      "plwd": 0.1,
+	      "cglty": 1,
+	      "cglcol": "black",
+	      "axislabcol": "grey",
+	      "caxislabels": [0,20,5],
+	      "cglwd": 2,
+	      "vlcex": 3
+	    }
+	  },
+
+      "land_use": {
+      "run_module": false,
+      "use_all_scenarios": false,
+      "include_targets": ["WRLD", "CBD"],
+      "include_bounds_limits": [0.5, 1],
+      "include_benchmark_scenarios": ["cb", "bd", ["bd", "oc"], ["cb", "bd", "oc"]],
+      "include_variables_weights": [1, [1, 10], 1],
+      "include_tradeoff_curve_values": [0.25, 1],
+      "subregion_combinations": [["states", ""], ""]
+      },
+
+	  "report": {
+	    "run_module": false
+    }
+	}
+}
