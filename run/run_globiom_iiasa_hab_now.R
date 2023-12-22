@@ -31,41 +31,16 @@ rel_path_spp <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/sp
 
 gcms <- grep(pattern = ".csv",x = list.files(rel_path_spp,full.names = F),value = T,invert = T)
 
+# excluir bc q ja foi!
+
+gcms <- gcms[2:9]
+
 dest <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/hab_now"
 
 
 # criando objeto com indices do JSON
 
 cfg = jsonlite::fromJSON("/dados/pessoal/francisco/TradeHub/json/globiom_iiasa_regions_hab_now.json")
-
-
-# tem q adiconar o lugar pra salvar
-# funcao pra calcular tudo q eu preciso
-# run_plangea <- function(reg, scen, gcms, dest, cfg) {
-#   for (i in seq_along(reg)) {
-#     for (j in 1:length(scen)) {
-#       for (k in seq_along(gcms)) {
-#         # local de destino onde os resultados são salvos
-#         cfg$io$base_path <- paste0(dest, "/", reg[i], "/", scen[j], "/")
-#         
-#         # tem que adicionar a regiao!
-#         cfg$io$lu_relative_path <- paste0("land-use-regional_2050/", reg[i], "/")
-#         
-#         # tem que adicionar o cenario, porque para cada regiao eh para rodar o cenario
-#         cfg$io$future_lu_relative_path <- paste0("land-use-2050/", scen[j], "/")
-#         
-#         # caminho das spp tb varia
-#         cfg$io$species_relative_path <- paste0("species_climate/SSP3", "/", gcms[k])
-#         
-#         plangea(cfg = cfg)
-#       }
-#     }
-#   }
-# }
-# 
-# run_plangea(reg = reg,scen = scen,gcms=gcms,dest = dest,cfg=cfg)
-
-
 
 run_plangea <- function(reg, scen, gcms, dest, cfg) {
   
@@ -85,7 +60,7 @@ run_plangea <- function(reg, scen, gcms, dest, cfg) {
   
 }
  
-num_clusters <- length(gcms)
+num_clusters <- 20
 
 cl <- makeCluster(num_clusters)
 
