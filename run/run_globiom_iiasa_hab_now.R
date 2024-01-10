@@ -31,9 +31,7 @@ rel_path_spp <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/sp
 
 gcms <- grep(pattern = ".csv",x = list.files(rel_path_spp,full.names = F),value = T,invert = T)
 
-# excluir bc q ja foi!
 
-gcms <- gcms[2:9]
 
 dest <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/hab_now"
 
