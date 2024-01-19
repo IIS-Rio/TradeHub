@@ -84,3 +84,6 @@ res_tbl = res_tbl[-exc_rows,]
 
 # Adding results to the final table
 res_tbl[, "bd_agg"] = bd_agg_vec
+
+# Writing to disc
+write.csv(x = res_tbl, file = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/bd_agg_future_scens.csv", row.names = F)
