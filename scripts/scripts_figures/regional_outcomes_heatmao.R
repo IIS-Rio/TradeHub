@@ -17,48 +17,90 @@ library(scico)
 
 # fazer tb figura com mudanca % nao apenas absoluta! pq isso  enfatiza diferencas
 
-df <- read.csv("output_tables/resultados_cenarios_regional_analysis.csv")
+df <- read.csv("/dados/pessoal/francisco/TradeHub/output_tables/resultados_cenarios_regional_analysis.csv")
 
 levels_regions <- c("Global","SSA","LAC","CSI","SEA","EAS","MNA","OCE","SAS","EUR","USA","CAN")
 
+
+bio <- df%>%
+  filter(name%in%c("bd.val","it.val","ec.val"))#%>%
+  #remover bd antigo
+  #filter(name!="bd.val")
+
+
+# dados com mudancas climáticas
+
+
+clim <- read.csv("/dados/pessoal/francisco/TradeHub/output_tables/updated_results/agg_bd_climate_env.csv")
+
+clim_long <- pivot_longer(clim,3)%>%
+  rename(region=regions,scenario=scens)%>%
+  mutate(variable="Extinction debt reduction",
+         name="bd.val")%>%
+  # add columns
+  left_join(bio[,c(1,2,6,7)],by = join_by(region, scenario))
+
+
+clim_long <- unique(clim_long)
+
 ################################################################################
-## PLANGEA METRICS
+## bio METRICS
 ################################################################################
 
-# gambiarra, mudar depois
 
-df2 <- df%>%
-  mutate(value=if_else(label_scen=="BAU"&value>0,value*-1,value))
+# adicionando bd novo
 
-metricas <- df2%>%
-  filter(!variable=="lulcc")%>%
-  group_by(region,name)%>%
-  filter(variable== unique(variable)) %>%
-  # calculando prop. em relacao ao BAU em modulo
-  #mutate(relative_to_BAU_2050=value/abs(value[label_scen=="BAU"]))
-  # calculando prop. em relacao ao BAU em modulo e invertendo sinal
-  # calculando prop. em relacao ao BAU em modulo e invertendo sinal
-  mutate(
-    relative_to_BAU_2050=((value-value[label_scen=="BAU"])/(value[label_scen=="BAU"])*100*-1)
+bio <- rbind(bio,clim_long)
+
+bsline <- filter(bio,label_scen=="BAU")%>%rename(value_BAU=value)
+trde <- filter(bio,conservation!="C"&label_scen!="BAU")
+con <- filter(bio,conservation=="C"&label_scen!="BAU")
+
+trde <- left_join(trde,bsline[,c(1,3,4,5,7)])%>%
+  # calculate relative value
+  mutate(relative_to_BAU_2050=(value-value_BAU)/abs(value_BAU))
+
+con <- left_join(con,bsline[,c(1,3,4,5)])%>%
+  # calculate relative value
+  mutate(relative_to_BAU_2050=(value-value_BAU)/abs(value_BAU))
+
+
+trde <- rbind(trde,con)
+
+
+# # gambiarra, mudar depois
+# 
+# df2 <- df%>%
+#   mutate(value=if_else(label_scen=="BAU"&value>0,value*-1,value))
+
+# metricas <- df2%>%
+#   filter(!variable=="lulcc")%>%
+#   group_by(region,name)%>%
+#   filter(variable== unique(variable)) %>%
+#   # calculando prop. em relacao ao BAU em modulo
+#   #mutate(relative_to_BAU_2050=value/abs(value[label_scen=="BAU"]))
+#   # calculando prop. em relacao ao BAU em modulo e invertendo sinal
+#   # calculando prop. em relacao ao BAU em modulo e invertendo sinal
+#   mutate(
+#     relative_to_BAU_2050=((value-value[label_scen=="BAU"])/(value[label_scen=="BAU"])*100*-1)
+#     
+#    )
     
-    )
-    
-
 
 #ordenar 
 
-metricas$label_scen <-factor(metricas$label_scen,levels = (c("ETL","Ta","Tr","Fr","Trade-base","BAU")))
+trde$label_scen <-factor(trde$label_scen,levels = (c("ETL","Ta","Tr","Fr","Trade-base","BAU")))
 
 
 
-metricas$variable <- recode_factor(metricas$variable, 'Ecoregion vulnerability' = "Ecoregion vulnerability reduction")
+trde$variable <- recode_factor(trde$variable, 'Ecoregion vulnerability' = "Ecoregion vulnerability reduction")
 
 
-metricas$variable <- factor(metricas$variable,levels = (c("Extinction debt reduction","Ecoregion vulnerability reduction","Ecossistem integrity reduction","Carbon","Land opportunity cost")))
+trde$variable <- factor(trde$variable,levels = (c("Extinction debt reduction","Ecoregion vulnerability reduction","Ecossistem integrity reduction","Carbon","Land opportunity cost")))
 
 # falta ordenar por regiao e entender melhor as metricas: qndo eh reducao, qndo eh aumento!
 
-metricas$region <- factor(metricas$region,levels = rev(c(levels_regions)))
+trde$region <- factor(trde$region,levels=rev(c("LAC","SSA","CSI","SEA","MNA","SAS","EUR","EAS","USA","OCE","CAN")))
 
 #------------------------------------------------------------------------------
 
@@ -67,70 +109,89 @@ metricas$region <- factor(metricas$region,levels = rev(c(levels_regions)))
 
 # primeiro, escalar cada variavel separadamente, ente -1 e 1
 
-pseudoLog10 <- function(x) { asinh(x/2)/log(10) }
-
-pseudoLog10(metricas$value)
+# pseudoLog10 <- function(x) { asinh(x/2)/log(10) }
+# 
+# pseudoLog10(trde$value)
 
 # aqui tem q arrumar, pq ta errado o scale!
 
-metricas2 <- metricas %>%
-  # colocando bd em log (tem q ser pseudolog)
-   mutate(relative_to_BAU_2050=if_else(condition = name=="bd.val",true = pseudoLog10(relative_to_BAU_2050),false = relative_to_BAU_2050))%>%
-  # # parte que ja funcionava antes
-  group_by(across(5))%>%
-  filter(variable==variable)%>%
-  #mutate(relative_to_BAU_2050_sc=relative_to_BAU_2050/max(relative_to_BAU_2050))
-  mutate(relative_to_BAU_2050_sc = scale(relative_to_BAU_2050, center = min(relative_to_BAU_2050), scale = max(relative_to_BAU_2050) - min(relative_to_BAU_2050)) * 2 - 1)
-  
-  
-my_breaks <- c(-0.4,0,1,2)
+# metricas2 <- metricas %>%
+#   # colocando bd em log (tem q ser pseudolog)
+#    mutate(relative_to_BAU_2050=if_else(condition = name=="bd.val",true = pseudoLog10(relative_to_BAU_2050),false = relative_to_BAU_2050))%>%
+#   # # parte que ja funcionava antes
+#   group_by(across(5))%>%
+#   filter(variable==variable)%>%
+#   #mutate(relative_to_BAU_2050_sc=relative_to_BAU_2050/max(relative_to_BAU_2050))
+#   mutate(relative_to_BAU_2050_sc = scale(relative_to_BAU_2050, center = min(relative_to_BAU_2050), scale = max(relative_to_BAU_2050) - min(relative_to_BAU_2050)) * 2 - 1)
+#   
+#   
+# my_breaks <- c(-0.4,0,1,2)
 
-metricas2$name <- gsub(pattern = ".val",replacement = "",x = metricas$name)
+trde$name <- gsub(pattern = ".val",replacement = "",x = trde$name)
 
-limit <- max(abs(metricas2$relative_to_BAU_2050_sc)) * c(-1, 1)
+#limit <- max(abs(metricas2$relative_to_BAU_2050_sc)) * c(-1, 1)
 
 #ordenando siglas das variaveis
 
 
-metricas2$name <- factor(metricas2$name,levels=c("bd","ec","it","cb","oc"))
-names(metricas2)
+trde$name <- factor(trde$name,levels=c("bd","ec","it","cb","oc"))
 
-metricas_grid_BTC_base <- metricas2%>%
-  filter(!label_scen=="BAU")%>%
+metricas_grid_BTC_base <- trde%>%
+  #filter(label_scen=="BAU")%>%
   filter(!conservation=="C")%>%
+  # scale data above a certain treshdold
+  mutate(relative_to_BAU_2050_skwd=if_else(relative_to_BAU_2050 <(-2),-2,relative_to_BAU_2050))%>%
   #mutate(relative_to_BAU_2050=relative_to_BAU_2050/max(relative_to_BAU_2050))%>%
   ggplot(aes(y = region, x=name)) +
-  geom_raster(aes(fill = relative_to_BAU_2050_sc))+
+  geom_raster(aes(fill = relative_to_BAU_2050_skwd))+
   #scale_fill_viridis(name = "Rel. BAU",breaks = my_breaks,trans=scales::pseudo_log_trans(sigma = 0.001))+
   #scale_y_continuous(trans=scales::pseudo_log_trans(base = 10))
   #scale_fill_viridis(limit = limit)+
   theme_bw()+
   #scale_fill_distiller(type = "div", limit = limit)+
-  scale_fill_scico(palette = "roma")+ 
+  scale_fill_scico(palette = "roma",limits=c(-2,2))+ 
   facet_wrap(~label_scen)+
   rotate_x_text(angle = 90)+
   xlab("")+
   ylab("")+
   ggtitle("BTC-base") +
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  geom_text(aes(label = round(relative_to_BAU_2050,2)), size = 2 )+
+  theme(axis.text.x = element_text(size=7),
+        axis.text.y = element_text(size=7),
+        strip.text.y = element_text(size = 7),
+        strip.text.x = element_text(size = 7),
+        plot.title = element_text(size = 8),
+        axis.title = element_text(size=7))
 
 
 
-metricas_grid_C <- metricas2%>%
-  filter(!label_scen=="BAU")%>%
+metricas_grid_C <- trde%>%
+  #filter(!label_scen=="BAU")%>%
   filter(conservation=="C")%>%
+  mutate(relative_to_BAU_2050_skwd=if_else(relative_to_BAU_2050 <(-2),-2,relative_to_BAU_2050))%>%
+  mutate(relative_to_BAU_2050_skwd=if_else(relative_to_BAU_2050_skwd >2,2,relative_to_BAU_2050_skwd))%>%
   ggplot(aes(y = region, x=name)) +
-  geom_raster(aes(fill = relative_to_BAU_2050_sc))+
+  geom_raster(aes(fill = relative_to_BAU_2050_skwd))+
   # scale_fill_viridis(name = "Rel. BAU",breaks = my_breaks,trans=scales::pseudo_log_trans(sigma = 0.001))+
   theme_bw()+
-  scale_fill_scico(palette = "roma", limit = limit,name = "Rel. variation BAU")+
+  scale_fill_scico(palette = "roma", limit = c(-8,8),name = "trade/BAU")+
   #scale_y_continuous(trans=scales::pseudo_log_trans(base = 10))
   facet_wrap(~label_scen)+
   rotate_x_text(angle = 90)+
   xlab("")+
   ylab("")+
   ggtitle("C")+
-  theme(legend.position = c(.85, .2))
+  theme(legend.position = c(.85, .2))+
+  geom_text(aes(label = round(relative_to_BAU_2050,2)), size = 2 )+
+  theme(axis.text.x = element_text(size=7),
+        axis.text.y = element_text(size=7),
+        strip.text.y = element_text(size = 7),
+        strip.text.x = element_text(size = 7),
+        plot.title = element_text(size = 8),
+        axis.title = element_text(size=7),
+        legend.title = element_text(size=7),
+        legend.text = element_text(size=7))
 
 
 #option="plasma"
@@ -142,7 +203,7 @@ tiles_plot <- ggarrange(metricas_grid_BTC_base,metricas_grid_C,widths = c(2,3))
 
 # talves separar aqui apenas quem melhorou e quem piorou em termos relativos a 2050 pode funcionar legal tb! mas perde info.
 
-ggsave(filename = "figures_paper/metrics_PLANGEA_Trade_scen_with_conservation_relative_BAU2050_heatmaps.jpeg",width = 23,height = 12,units = "cm",plot = tiles_plot,bg ="white")
+ggsave(filename = "/dados/pessoal/francisco/TradeHub/figures_paper_new_versions/heatmap_regional_biodiv.jpeg",width = 15,height = 10,units = "cm",plot = tiles_plot,bg ="white",scale=1)
 
 #------------------------------------------------------------------------------
 

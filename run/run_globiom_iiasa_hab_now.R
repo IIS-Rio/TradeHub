@@ -6,6 +6,7 @@
 # tem q copiar o diretorio pra dentro do rawdata, se nao nao funciona!
 
 # pacotes ----------------------------------------------------------------------
+
 devtools::load_all("/dados/pessoal/francisco/plangea-pkg/")
 library(jsonlite)
 library(foreach)
@@ -13,17 +14,17 @@ library(doParallel)
 
 # ------------------------------------------------------------------------------
 
-# caminho pra salvar as analises por regiao
-# precisa mudar o nome pra ficar claro q o new results eh hab_pot!
+# uma pasta por regiao
 
-# p <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/regional_analysis/"
-#  
-# # uma pasta por regiao
 regioes <- read.csv("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/subregions/region_code.csv")
 
 scen <- list.files("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-2050")
 
+# houve problema nos seguintes cenatios
+
 reg <- regioes$region
+
+# ouve problema nas seguintes regioes
 
 # envelopes climaticos
 
@@ -31,9 +32,7 @@ rel_path_spp <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/sp
 
 gcms <- grep(pattern = ".csv",x = list.files(rel_path_spp,full.names = F),value = T,invert = T)
 
-
-
-dest <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/hab_now"
+dest <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/hab_now2"
 
 
 # criando objeto com indices do JSON
@@ -58,17 +57,56 @@ run_plangea <- function(reg, scen, gcms, dest, cfg) {
   
 }
  
-num_clusters <- 20
-
-cl <- makeCluster(num_clusters)
-
 tasks <- expand.grid(reg,scen,gcms)
 names(tasks) <- c("reg","scen","gcms")
+# tasks <- data.frame( reg = c("LAC","OCE"),
+#                      scen = c("TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
+#                                "TH_TFELIM_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2"),
+#                      gcms = c("bc","ca"))
+
+
+# Setting up the progress bar
+iterations = nrow(tasks)
+
+# Progress bar object
+pb_l = progress::progress_bar$new(
+  format = "Loading scenario [:bar] :percent in :elapsed",
+  total = iterations, clear = FALSE, width = 70)
+
+progress_number = 1:iterations
+progress = function(n) {pb_l$tick(tokens = list(sp = progress_number[n]))}
+opts = list(progress = progress)
+
+# run in parallel
+
+num_clusters <- 7
+
+cl <- makeCluster(num_clusters)
+doSNOW::registerDoSNOW(cl)
+
+
+
+#names(tasks) <- c("reg","scen","gcms")
+
 
 # Run tasks in parallel
-foreach(i = 1:nrow(tasks), .combine = 'c') %dopar% {
-  run_plangea(reg = tasks$reg[i], scen = tasks$scen[i],tasks$gcms[i] ,dest, cfg)
-}
+foreach(i = 1:nrow(tasks), .combine = 'c',.packages = c('devtools', 'progress'),
+        .options.snow = opts,
+        .errorhandling = "remove") %dopar% {
+
+          suppressWarnings(suppressMessages(devtools::load_all("/dados/pessoal/francisco/plangea-pkg/", quiet = TRUE)))
+          run_plangea(reg = tasks$reg[i], scen = tasks$scen[i],tasks$gcms[i] ,dest, cfg)
+
+        }
 
 # Stop the parallel cluster
 stopCluster(cl)
+
+# for(i in  1:nrow(tasks)){
+#   
+#   run_plangea(reg = tasks$reg[i], scen = tasks$scen[i],tasks$gcms[i] ,dest, cfg)
+#   
+# }
+
+
+# extent das spp ta diferente

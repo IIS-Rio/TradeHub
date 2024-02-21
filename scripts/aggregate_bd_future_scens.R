@@ -1,11 +1,14 @@
 # Calculating BD aggregated value for future scenarios (restor. weight) --------
-
+# use mult_exrik_aggregate do perfil do luga!! e copiar 
 # Libraries
 library(devtools)
 devtools::load_all("/dados/pessoal/luga/dev/plangea-pkg/")
 
 # Scenarios combinations
 gcms = c("bc", "ca", "cm", "cn", "gf", "ip", "mi", "mr", "ms")
+gcms= gcms[1:8]
+# excluir ms por enquanto!
+
 regions = c("CAN", "CSI", "EAS", "EUR", "LAC", "MNA", "OCE", "SAS", "SEA", "SSA", "USA")
 scens = c("TH_TF2000_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2", "TH_TF2000_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
           "TH_TFBASE_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2", "TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
@@ -84,3 +87,12 @@ res_tbl = res_tbl[-exc_rows,]
 
 # Adding results to the final table
 res_tbl[, "bd_agg"] = bd_agg_vec
+
+# ficou tudo igual, precisa rever depois!
+
+avg_tbl <- res_tbl%>%
+  group_by(regions,scens)%>%
+  summarise(mean_bd=mean(bd_agg))
+
+
+write.csv(avg_tbl,"/dados/pessoal/francisco/TradeHub/output_tables/updated_results/agg_bd_climate_env.csv",row.names = F)

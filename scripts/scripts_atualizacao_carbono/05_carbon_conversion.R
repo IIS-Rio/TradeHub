@@ -60,7 +60,7 @@ for(l in lus){
 cb_emssion_df <- do.call(rbind,lst_df)%>%
   # agrupar pastagem e agricultura
   group_by(scenario,region)%>%
-  summarise
+  summarise(cb_emission=sum(cb_emission))
 
 
 # completando tabela

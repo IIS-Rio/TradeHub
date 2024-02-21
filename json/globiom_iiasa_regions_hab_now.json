@@ -15,7 +15,7 @@
 		"rawdata_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/",
 		
 		// eu fiz antes com land-use 2020. Tem q ser 2050
-		"lu_relative_path": "land-use-regional_2050/",
+		"lu_relative_path": "",
 		"past_lu_relative_path": "",
 		"ecoregions_relative_path": "",
 //		"future_lu_relative_path": "land-use-2050/TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2/",
@@ -154,7 +154,7 @@
 		  "bd_variable_name": "bd",
 		  "bd_classes": ["A", "B", "M", "R"],
 		  "bd_subfolders": ["raster_amphibians", "raster_birds", "raster_mammals", "raster_reptiles"],
-		  "threads_harmonize": 8,
+		  "threads_harmonize": 6,
 		  "spp_table": {
 // checar se da certo ficar separado dessa forma o arquivo do relative path!
 		    "spp_filename": "habitat_table_marginal_excluded_ok.csv",

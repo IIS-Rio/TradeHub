@@ -8,7 +8,7 @@
 # pra rodar como background job, usar o scritp "run_reprojecting_spp_dist.r"
 
 #-------------------------------------------------------------------------------
-
+# tem q rodar essa porra de novo!!olhar com calma!!
 #- pacotes ---------------------------------------------------------------------
 
 library(raster)
@@ -29,7 +29,7 @@ files_to_future <- paste0("/dados/projetos_andamento/CBD-draft/rawdata/climate_e
 
 # base raster with projection
 
-r <- raster("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use/agriculture.tif")
+r <- rast("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use/agriculture.tif")
 
 crs <- crs(r)
 
@@ -40,18 +40,18 @@ cl <- makeCluster(num_cores)
 process_raster <- function(input_file, output_folder,current_or_SSP3) {
   
   # Load the raster package within the worker
-  library(raster)
+  library(terra)
   
   # condition to run the ressampling
   
   # Read the input raster
     
-    r2 <- raster(input_file)
+    r2 <- rast(input_file)
     
     # Reproject the raster (replace the projection parameters with your target projection)
     target_projection <- crs
     
-    r2 <- projectRaster(r, crs = target_projection)
+    r2 <- terra::project(r2, r)
     
     # Define the output file name
     output_file <- file.path(output_folder, basename(input_file))
