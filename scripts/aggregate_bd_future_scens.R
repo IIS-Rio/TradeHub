@@ -88,8 +88,6 @@ res_tbl = res_tbl[-exc_rows,]
 # Adding results to the final table
 res_tbl[, "bd_agg"] = bd_agg_vec
 
-# ficou tudo igual, precisa rever depois!
-
 avg_tbl <- res_tbl%>%
   group_by(regions,scens)%>%
   summarise(mean_bd=mean(bd_agg))
