@@ -1,7 +1,7 @@
 
 #- pacotes ---------------------------------------------------------------------
 
-library(terra)
+library(raster)
 library(foreach)
 library(doParallel)
 library(snow)
@@ -19,7 +19,7 @@ output_path <- file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/r
 
 groups <- list.dirs(file_to_present,recursive = F,full.names = F)
 
-r <- rast("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-regional_2050/CAN/agriculture.tif")
+r <- raster("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use-regional_2050/CAN/agriculture.tif")
 
 
 # listando raster names per group
@@ -40,24 +40,24 @@ tasks <- merge(files,gcm_list)
 
 names(tasks)[3] <- "gcms"
 
-tasks <- tasks[1:10,]
+#tasks <- tasks[1:10,]
 
 
 process_raster <- function(group,gcm,raster,input_path,output_path,current_or_SSP3) {
   
   # Load the raster package within the worker
-  library(terra)
+  library(raster)
   
   input_file <-(file.path(input_path,gcm,group,raster))
   
   # Read the input raster
   
-  r2 <- rast(input_file)
+  r2 <- raster(input_file)
   
   # Reproject the raster (replace the projection parameters with your target projection)
   #target_projection <- crs
   
-  r2 <- terra::project(r2, r,"near")
+  r2 <- raster::projectRaster(r2, r,method = "ngb")
   
   # Define the output file name
   output_file <- file.path(output_path,gcm,group,raster )
@@ -65,7 +65,7 @@ process_raster <- function(group,gcm,raster,input_path,output_path,current_or_SS
   
   
   # Save the reprojected raster
-  writeRaster(r2, filename = output_file, gdal=c("COMPRESS=DEFLATE"),overwrite=T)
+  writeRaster(r2, filename = output_file, options=c("COMPRESS=DEFLATE"),overwrite=T)
   
 }
 
@@ -87,11 +87,11 @@ cl <- makeCluster(num_cores, outfile="")
 doSNOW::registerDoSNOW(cl)
 
 # Run tasks in parallel
-foreach(i = 1:nrow(tasks),.packages = c('terra'),
+foreach(i = 1:nrow(tasks),.packages = c('raster'),
         .options.snow = opts,
         .errorhandling = "remove") %dopar% {
           
-          suppressWarnings(suppressMessages(devtools::load_all("/dados/pessoal/francisco/plangea-pkg/", quiet = TRUE)))
+          # suppressWarnings(suppressMessages(devtools::load_all("/dados/pessoal/francisco/plangea-pkg/", quiet = TRUE)))
           process_raster(group = tasks$group[i],gcm = tasks$gcms[i],raster = tasks$raster[i],input_path = files_to_future,output_path = output_path,current_or_SSP3 = "SSP3" )
           
         }

@@ -1,6 +1,7 @@
 library(data.table)
 library(tidyverse)
 library(scales)
+library(ggpubr)
 
 # combining new carbon data (move to another script when possible)
 
@@ -32,6 +33,17 @@ df_l <- pivot_longer(df,c(3,6,7))
 
 df_l$label_scen <- factor(df_l$label_scen,levels = c("ETL","Ta","Tr","Fr","BAU","Trade-base"))
 
+
+total_cb <- df_l %>%
+  filter(name!="net")%>%
+  group_by(label_scen,conservation)%>%
+  summarise(total_cb=sum(value))%>%
+  mutate(total_cb_1000=total_cb/10^9)
+
+
+
+
+
 p_BTC_base <- df_l %>%
   filter(conservation=="BTC-base",
          name=="net")%>%
@@ -60,7 +72,7 @@ p_BTC_base <- df_l %>%
   xlab("")+
   ylab(expression(paste(CO[2], " balance ( billion tons) ", sep="")))+
   #ylab("CO2 balance ( billion tons)")+
-  #ylim(-25,12)+
+  ylim(-11,210)+
   guides(fill = guide_legend(reverse=TRUE))
 
 
@@ -91,7 +103,7 @@ p_BTC_C <- df_l %>%
   ggtitle("C")+
   xlab("")+
   ylab(expression(paste(CO[2], " balance ( billion tons) ", sep="")))+
-  #ylim(-25,12)+
+  ylim(-11,210)+
   guides(fill = guide_legend(reverse=TRUE))
 
 p_BTC_base <- ggpar(p = p_BTC_base,font.caption = c("plain",7,"black"),font.x = c("plain",7,"black"),font.y = c("plain",9,"black"),font.legend =c("plain",7,"black"),font.tickslab = c("plain",7,"black"),font.main = c("bold",9,"black") )
