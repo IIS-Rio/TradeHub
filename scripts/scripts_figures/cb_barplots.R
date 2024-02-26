@@ -14,8 +14,6 @@ emited$cb_emission <- emited$cb_emission/100
 seq <- fread("output_tables/updated_results/carbon_sequetered_restoration_Naturemap.csv")
 
 
-
-
 df <- left_join(emited,seq)[,c(2:4,6,7,9)]
 
 names(df)[c(2,6)] <- c("region","cb_seq")
@@ -97,7 +95,7 @@ p_BTC_C <- df_l %>%
   scale_fill_brewer(palette = "Set3", name="")+
   scale_y_continuous(labels = comma)+
   # incluindo net value
-#  geom_point(data = total_cb[total_cb$conservation!="BTC-base",],aes(y=total_cb_1000,x=label_scen),fill="black",colour="black",shape=8, position=position_nudge(x = -0.3))+
+  geom_point(data = total_cb[total_cb$conservation!="BTC-base",],aes(y=total_cb_1000,x=label_scen),fill="black",colour="black",shape=8, position=position_nudge(x = -0.3))+
   #facet_grid(~conservation)+
   theme_bw()+
   ggtitle("C")+
@@ -116,4 +114,4 @@ p_BTC_C  <- ggpar(p = p_BTC_C ,font.caption = c("plain",7,"black"),font.x = c("p
 final <- ggarrange(p_BTC_base,p_BTC_C,common.legend = T)
 
 
-ggsave(filename = "figures_paper/cb_barplot.jpeg",width = 16,height = 16,units = "cm",plot = final)
+ggsave(filename = "/dados/pessoal/francisco/TradeHub/figures_paper_new_versions/cb_barplot.jpeg",width = 16,height = 16,units = "cm",plot = final)

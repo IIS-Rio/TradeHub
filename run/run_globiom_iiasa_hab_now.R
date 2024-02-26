@@ -32,12 +32,12 @@ rel_path_spp <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/sp
 
 gcms <- grep(pattern = ".csv",x = list.files(rel_path_spp,full.names = F),value = T,invert = T)
 
-dest <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/hab_now2"
+dest <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/hab_now3"
 
 
-# criando objeto com indices do JSON
+# criando objeto com indices do JSON (com bd only)
 
-cfg = jsonlite::fromJSON("/dados/pessoal/francisco/TradeHub/json/globiom_iiasa_regions_hab_now.json")
+cfg = jsonlite::fromJSON("/dados/pessoal/francisco/TradeHub/json/globiom_iiasa_regions_hab_now_bd_only.json")
 
 run_plangea <- function(reg, scen, gcms, dest, cfg) {
   
@@ -59,11 +59,11 @@ run_plangea <- function(reg, scen, gcms, dest, cfg) {
  
 tasks <- expand.grid(reg,scen,gcms)
 names(tasks) <- c("reg","scen","gcms")
-# tasks <- data.frame( reg = c("LAC","OCE"),
-#                      scen = c("TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2",
-#                                "TH_TFELIM_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2"),
-#                      gcms = c("bc","ca"))
 
+# task simplificado pra testar: 1 regiao, 2 envelopes, 1 cenario
+
+tasks <- filter(tasks,reg=="EUR",scen=="TH_TFELIM_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2")%>%filter(gcms %in%c("bc","ca"))
+  
 
 # Setting up the progress bar
 iterations = nrow(tasks)
@@ -81,12 +81,8 @@ opts = list(progress = progress)
 
 num_clusters <- 7
 
-cl <- makeCluster(num_clusters)
+cl <- makeCluster(num_clusters,outfile="")
 doSNOW::registerDoSNOW(cl)
-
-
-
-#names(tasks) <- c("reg","scen","gcms")
 
 
 # Run tasks in parallel
@@ -102,11 +98,3 @@ foreach(i = 1:nrow(tasks), .combine = 'c',.packages = c('devtools', 'progress'),
 # Stop the parallel cluster
 stopCluster(cl)
 
-# for(i in  1:nrow(tasks)){
-#   
-#   run_plangea(reg = tasks$reg[i], scen = tasks$scen[i],tasks$gcms[i] ,dest, cfg)
-#   
-# }
-
-
-# extent das spp ta diferente
