@@ -5,6 +5,11 @@ library(tidyverse)
 library(sf)
 #-------------------------------------------------------------------------------
 
+# OBS:
+
+# CO2_eq removals/emissions – simply converted into CO2.  This value is negative for a carbon removal from the atmosphere, positive for an emission.  It can indicate inverse values of carbon, because when the delta is negative, the CO2_eq is positive!
+
+
 p <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/carbon_balance_IPCC"
 
 lst_tbls <- list.files(p,pattern = ".csv",recursive = T,full.names = T)

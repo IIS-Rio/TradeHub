@@ -62,7 +62,7 @@ names(tasks) <- c("reg","scen","gcms")
 
 # task simplificado pra testar: 1 regiao, 2 envelopes, 1 cenario
 
-tasks <- filter(tasks,reg=="EUR",scen=="TH_TFELIM_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2")%>%filter(gcms %in%c("bc","ca"))
+# tasks <- filter(tasks,reg=="EUR",scen=="TH_TFELIM_TCBASE_BIOD_NOTECH_NODEM_SPA0_SSP2")%>%filter(gcms %in%c("bc","ca"))
   
 
 # Setting up the progress bar
