@@ -6,7 +6,7 @@ devtools::load_all("/dados/pessoal/luga/dev/plangea-pkg/")
 
 # Scenarios combinations
 gcms = c("bc", "ca", "cm", "cn", "gf", "ip", "mi", "mr", "ms")
-gcms= gcms[1:8]
+#gcms= gcms[1:8]
 # excluir ms por enquanto!
 
 regions = c("CAN", "CSI", "EAS", "EUR", "LAC", "MNA", "OCE", "SAS", "SEA", "SSA", "USA")
@@ -23,7 +23,7 @@ res_tbl$bd_agg = NA
 
 # Input data
 x_vals_folder = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/Deltas/delta_regional/delta_rest/"
-hab_now_folder = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/hab_now/"
+hab_now_folder = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/hab_now3/"
 hab_pot_folder = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/hab_pot/"
 
 # Parallelism setup
@@ -77,10 +77,14 @@ stopCluster(cl)
 
 # Verifying existence of input data for each row
 in_datas = paste0(hab_now_folder, res_tbl$gcms, "/", res_tbl$regions, "/", res_tbl$scens, "/processed/harmonize_full_envir.qs")
+
 hab_pots = paste0(hab_pot_folder, res_tbl$regions, "/", res_tbl$scens, "/processed/harmonize_full_envir.qs")
 
 # Excluded rows: input data is not present
 exc_rows = unique(c(which(!file.exists(in_datas)), which(!file.exists(hab_pots))))
+
+in_datas[exc_rows] # PQ NAO RODOU PRA ESSAS ?
+
 
 # Excluding those lines from original table
 res_tbl = res_tbl[-exc_rows,]

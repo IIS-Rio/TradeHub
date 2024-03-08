@@ -199,3 +199,5 @@ p_BTC_C_seq  <- ggpar(p = p_BTC_C_seq ,font.caption = c("plain",7,"black"),font.
 # ggarrange(p_BTC_base2,C_plots)
 
 pannel <- ggarrange(p_BTC_base,p_BTC_C_em,p_BTC_C_seq,p_BTC_C,common.legend = T)
+
+ggsave(filename = "/dados/pessoal/francisco/TradeHub/figures_paper_new_versions/cb_barplot_pannel.jpeg",width = 16,height = 18,units = "cm",pannel)
