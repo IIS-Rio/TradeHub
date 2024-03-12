@@ -71,3 +71,51 @@ ec_p3 <- left_join(ec_p2,ec_df)
 st_write(ec_p3,"/dados/projetos_andamento/TRADEhub/trade_hub_plangea/variables/ecoregions.shp")
 
 # cruzar com as areas agricolas seguindo o mapa de hotspots!
+
+ec_p3 <- st_read("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/variables/ecoregions.shp")[-1,]
+
+
+# rasters dos cenarios
+
+p <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/agriculture_expansion_baseline_2050"
+
+
+# filtrar so NOBIOD
+
+agri_expan_files <-grep(pattern = "NOBIOD",x = list.files(p,pattern = "agricultural"),value = T)[-2]
+pasture_expan_files <- grep(pattern = "NOBIOD",list.files(p,pattern = "pasture"),value = T)[-2]
+
+# abrindor raster modelo
+
+r_m <- raster(file.path(p,agri_expan_files[1]))
+
+# convertendo soma em area
+
+area_pixel <- 50100* 61800/10^6
+dfs <- list()
+scens <- c("Fr","Tr","Ta","ETL")
+f <- function(x)sum(x,na.rm = T)
+
+for (i in 1:length(agri_expan_files)){
+  
+  agri_expan_r <- raster(file.path(p,agri_expan_files[i]))
+  past_expan_r <- raster(file.path(p,pasture_expan_files[i]))
+  #somando os 2 usos
+  soma <- agri_expan_r + past_expan_r
+  soma_area <- soma*area_pixel
+  zonal_result <-data.frame(scen=extract(soma_area, ec_p3, fun = sum))
+  names(zonal_result) <- scens[i]
+  dfs[[i]] <- zonal_result
+  # df pra plotar
+  expan_df <- as.data.frame(soma, xy=TRUE)
+  names(expan_df)[3] <- "agriculture_expansion"
+  dfs[[i]] <- zonal_result
+}
+
+
+# juntando tudo
+
+expansao_ecorregioes <- do.call(cbind,dfs)
+
+
+# usando os shapes nem vale a pena pq sao so 3 biomas q sao desmatados!
