@@ -1,3 +1,7 @@
+library(data.table)
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
 
 # dados calculados pelo PLANGEA ------------------------------------------------
 # df <- read.csv("output_tables/resultados_cenarios_regional_analysis.csv")
@@ -113,6 +117,17 @@ my_format <- function(x) {
 
 # parece q ta certo o lulc, entao vale rever o carbono!!deve ser algo com o sinal!!
 
+
+#Calculate the ratio between all other categories of label_scen and label_scen=="trade-base"
+
+trade_base_value <- sum(lulcc2$value[lulcc2$label_scen=="Trade-base"&lulcc2$conservation=="BTC-base"])
+
+trade_base_ratio <- lulcc2 %>%
+  #filter(label_scen != "trade-base") %>%
+  group_by(conservation,label_scen,AggrgtR) %>%
+  summarise(value=sum(value))%>%
+  mutate(ratio = value /trade_base_value)
+
 agri_exp <- lulcc2%>%
   # calculate percentages
   group_by(conservation,label_scen)%>%
@@ -124,6 +139,7 @@ agri_exp <- lulcc2%>%
          )%>%
   mutate(label=ifelse(abs(prop)>0.03,label,""))%>%
   mutate(value=value/100000000)%>%
+  mutate(ratio2 = value /trade_base_value)%>%
   dplyr::rename(region = AggrgtR)%>%
   ggplot() +
   aes(x = label_scen, fill = region,group=region, weight= value) +
@@ -143,7 +159,11 @@ agri_exp <- lulcc2%>%
   facet_wrap(vars(conservation))+
   xlab("")+
   ylab(yl)+
-  rotate_x_text(45)
+  rotate_x_text(45)+
+  # Add secondary y-axis representing the ratio between all other categories of label_scen and label_scen=="trade-base"
+  scale_y_continuous(
+    sec.axis = sec_axis(~ ./(trade_base_value/100000000),breaks = seq(-0.4,1.2,0.1))
+  )
 
 
 # geom_text(

@@ -13,7 +13,7 @@ rel_path_spp <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/sp
 
 gcms <- grep(pattern = ".csv",x = list.files(rel_path_spp,full.names = F),value = T,invert = T)
 
-dest <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/global_climate"
+dest <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/global_climate_hab_now"
 
 # cenarios
 
@@ -27,7 +27,7 @@ run_plangea <- function( scen, gcms, dest, cfg) {
   cfg$io$base_path <- paste0(dest, "/",gcms , "/",scen, "/")
   
   # tem que adicionar a regiao!
-  # cfg$io$lu_relative_path <- paste0("land-use-regional_2050/", reg, "/")
+  cfg$io$lu_relative_path <- paste0("land-use-2050/", scen, "/")
   
   # tem que adicionar o cenario, porque para cada regiao eh para rodar o cenario
   cfg$io$future_lu_relative_path <- paste0("land-use-2050/", scen, "/")
@@ -46,9 +46,9 @@ tasks <- expand.grid(scen,gcms)
 names(tasks) <- c("scen","gcms")
 
 
-tasks <- tasks[1,]
+#tasks <- tasks[1,]
 
-cfg = jsonlite::fromJSON("/dados/pessoal/francisco/TradeHub/json/globiom_iiasa_climate.json")
+cfg = jsonlite::fromJSON("/dados/pessoal/francisco/TradeHub/json/globiom_iiasa_global_climate_habnow.json")
 
 
 # Setting up the progress bar
