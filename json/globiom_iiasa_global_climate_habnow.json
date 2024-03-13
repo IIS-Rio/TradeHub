@@ -11,12 +11,12 @@
 // INPUT-OUTPUT ----------------------------------------------------------------
 	"io": {
 	  "plangea_path": "/dados/pessoal/francisco/plangea-pkg/",
-	  "base_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/globiom_iiasa_baseline/",
+	  "base_path": "",
 		"rawdata_path": "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/",
-		"lu_relative_path": "land-use/",
+		"lu_relative_path": "/land-use-2050/",
 		"past_lu_relative_path": "",
 		"ecoregions_relative_path": "",
-		"future_lu_relative_path": "land-use-2050/TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2/",
+//		"future_lu_relative_path": "land-use-2050/TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2/",
 		"pa_relative_path": "",
 		"variables_relative_path": "variables/",
 		"species_relative_path": "species/",

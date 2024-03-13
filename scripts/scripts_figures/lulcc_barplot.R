@@ -122,11 +122,13 @@ my_format <- function(x) {
 
 trade_base_value <- sum(lulcc2$value[lulcc2$label_scen=="Trade-base"&lulcc2$conservation=="BTC-base"])
 
-trade_base_ratio <- lulcc2 %>%
+trade_base_net <- lulcc2 %>%
   #filter(label_scen != "trade-base") %>%
-  group_by(conservation,label_scen,AggrgtR) %>%
+  group_by(conservation,label_scen) %>%
   summarise(value=sum(value))%>%
-  mutate(ratio = value /trade_base_value)
+  mutate(region="",
+         value=value/100000000,
+         ratio=value/18.0066413)
 
 agri_exp <- lulcc2%>%
   # calculate percentages
@@ -144,7 +146,7 @@ agri_exp <- lulcc2%>%
   ggplot() +
   aes(x = label_scen, fill = region,group=region, weight= value) +
   geom_bar() +
- # geom_text(aes(label = label,x = label_scen,y=value), position = position_stack(vjust = 0.5),size = 2,colour = 'black') +
+  #geom_text(data = trade_base_net[trade_base_net$conservation!="BTC-base",],aes(label = round(value,1),x = label_scen,y=value), position = position_stack(vjust = 1.5),size = 2,colour = 'black') +
   geom_text(
     #data = . %>% filter(exclude=="include" ),  # Filtered data for geom_text
     aes(label = label, x = label_scen, y = value,group=region),
@@ -161,19 +163,14 @@ agri_exp <- lulcc2%>%
   ylab(yl)+
   rotate_x_text(45)+
   # Add secondary y-axis representing the ratio between all other categories of label_scen and label_scen=="trade-base"
-  scale_y_continuous(
-    sec.axis = sec_axis(~ ./(trade_base_value/100000000),breaks = seq(-0.4,1.2,0.1))
-  )
+  scale_y_continuous(breaks=c(-4,0,4,8,12,16,20),
+    sec.axis = sec_axis(~ ./(trade_base_value/100000000),breaks = c(-0.2221,0,0.2221,0.4442,0.666,0.888,1.110),labels =c(-0.2,0,0.2,0.4,0.6,0.8,1.1),"Ratio with BAU" ))
 
 
-# geom_text(
-#   data = lulcc2 %>% filter(exclude == "include"),
-#   aes(label = label, x = label_scen, 
-#       y = cumsum(value) - 0.5 * value), # Calculate position for labels
-#   size = 2,
-#   colour = 'black'
-# ) +
-
-ggsave(filename = "/dados/pessoal/francisco/TradeHub/figures_paper_new_versions/lulcc_barplot.jpeg",width = 16,height = 16,units = "cm",plot = agri_exp)
+agri_exp2 <- agri_exp + geom_point(data = trade_base_net[trade_base_net$conservation!="BTC-base",], aes(x = label_scen, y = value), shape = 8, size = 2, colour = "black",show.legend = FALSE)
+  
+  
+ 
+ggsave(filename = "/dados/pessoal/francisco/TradeHub/figures_paper_new_versions/lulcc_barplot.jpeg",width = 16,height = 16,units = "cm",plot = agri_exp2)
 
 # falta ajustar porcentagem/colocar net values tb! e diminuir % qndo eh menor 3%

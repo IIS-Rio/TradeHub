@@ -36,7 +36,8 @@ total_cb <- df_l %>%
   filter(name!="net")%>%
   group_by(label_scen,conservation)%>%
   summarise(total_cb=sum(value))%>%
-  mutate(total_cb_1000=total_cb/10^9)
+  mutate(total_cb_1000=total_cb/10^9,
+         prop_BAU=total_cb_1000/170.7462)
 
 
 
@@ -102,9 +103,11 @@ p_BTC_C <- df_l %>%
   xlab("")+
   ylab(expression(paste(CO[2], " balance ( billion tons) ", sep="")))+
   ylim(-11,210)+
-  guides(fill = guide_legend(reverse=TRUE))
+  guides(fill = guide_legend(reverse=TRUE))+
+  scale_y_continuous( sec.axis = sec_axis(~ ./170.7462,"Ratio with BAU",breaks = c(0,0.2342658,0.4685317,0.7027975),labels=c(0,0.2,0.4,0.7)) )
 
 p_BTC_base <- ggpar(p = p_BTC_base,font.caption = c("plain",7,"black"),font.x = c("plain",7,"black"),font.y = c("plain",9,"black"),font.legend =c("plain",7,"black"),font.tickslab = c("plain",7,"black"),font.main = c("bold",9,"black") )
+
 
 p_BTC_C  <- ggpar(p = p_BTC_C ,font.caption = c("plain",7,"black"),font.x = c("plain",7,"black"),font.y = c("plain",8,"black"),font.legend =c("plain",7,"black"),font.tickslab = c("plain",7,"black"),font.main = c("bold",9,"black") )
 
