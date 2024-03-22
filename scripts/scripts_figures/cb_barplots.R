@@ -37,7 +37,9 @@ total_cb <- df_l %>%
   group_by(label_scen,conservation)%>%
   summarise(total_cb=sum(value))%>%
   mutate(total_cb_1000=total_cb/10^9,
-         prop_BAU=total_cb_1000/170.7462)
+         prop_BAU=total_cb_1000/170.7462,
+         dif_bau=round(1-prop_BAU,2),
+         bil=total_cb/10^9)
 
 
 

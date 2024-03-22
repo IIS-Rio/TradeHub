@@ -2,7 +2,7 @@
 
 # os deltas ja foram criados pra calcular balanco carbono. Precisa ser feito de forma regional???
 
-#
+# ta trocando etl por ta nos delta globais! refazer!!!
 
 regions <- rast("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/subregions/world_11_regions.tif")
 

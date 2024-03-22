@@ -186,3 +186,16 @@ ggsave(filename = "figures_paper_new_versions//minimum_carbon_cost.jpg",plot =mi
 #   #ylim(-700,200)+
 #   facet_grid(~name)+
 #   ylim(-700,700)
+
+# calculando total restaurado
+
+area_restaurada_scenario <- carbon_cost_f%>%
+  group_by(scenario,conservation)%>%
+  summarise(area_restaurada=sum(area_rest_km2)/10^6)
+
+
+# calculando o qnto mercado de carbono aliviaria os custos!!
+
+
+  
+                  

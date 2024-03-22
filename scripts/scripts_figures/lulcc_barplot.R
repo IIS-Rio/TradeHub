@@ -167,7 +167,18 @@ agri_exp <- lulcc2%>%
     sec.axis = sec_axis(~ ./(trade_base_value/100000000),breaks = c(-0.2221,0,0.2221,0.4442,0.666,0.888,1.110),labels =c(-0.2,0,0.2,0.4,0.6,0.8,1.1),"Ratio with BAU" ))
 
 
-agri_exp2 <- agri_exp + geom_point(data = trade_base_net[trade_base_net$conservation!="BTC-base",], aes(x = label_scen, y = value), shape = 8, size = 2, colour = "black",show.legend = FALSE)
+# Extract the unique colors from the original plot
+original_colors <- unique(agri_exp$'')
+
+# Define a color vector to use for geom_point
+# Assuming you want to cycle through the original colors
+point_colors <- rep(original_colors, length.out = nrow(trade_base_net))
+
+
+
+
+agri_exp2 <- agri_exp + geom_point(data = trade_base_net[trade_base_net$conservation!="BTC-base",], aes(x = label_scen, y = value), shape = 8, size = 2, colour = "black",fill=NA,show.legend = FALSE)+
+  scale_color_identity()  # Ensures that the color scale remains unchanged
   
   
  

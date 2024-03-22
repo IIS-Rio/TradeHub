@@ -12,7 +12,10 @@ total_oc <- resultados_cenarios_regional_analysis %>%
   group_by(label_scen,conservation,variable)%>%
   summarise(total_oc=sum(value))%>%
   mutate(total_oc_1000=total_oc/10^9,
-         total_oc_1000=total_oc_1000*-1 )
+         total_oc_1000=total_oc_1000*-1 ,
+         )
+
+# adding carbon payment
 
 
 #write_csv(x = total_oc,file = "output_tables/global_oc.csv")

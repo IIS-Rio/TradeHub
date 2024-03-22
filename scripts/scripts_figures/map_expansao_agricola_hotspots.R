@@ -78,11 +78,11 @@ regions_hotspots <- st_intersection(regions_pj,hp2)
 
 regions_hotspots$area <- as.numeric(st_area(regions_hotspots)/10^6)
 
-regions_hotspots <- st_drop_geometry(regions_hotspots)
+regions_hotspots2 <- st_drop_geometry(regions_hotspots)
 
 # salvandot tabela
 
-write.csv(regions_hotspots,"/dados/pessoal/francisco/TradeHub/output_tables/updated_results/overlap_hotspots_11_regions.csv",row.names = F)
+write.csv(regions_hotspots2,"/dados/pessoal/francisco/TradeHub/output_tables/updated_results/overlap_hotspots_11_regions.csv",row.names = F)
 
 
 # convertendo soma em area
@@ -160,9 +160,6 @@ global_maps<- ggarrange(plotlist =  rev(maps),common.legend = F,labels = rev(c("
 
 global_maps2 <- ggarrange(l,global_maps,nrow = 2,heights = c(1,6))
 
-
- 
-
 # juntando tudo
 
 expansao_hotspots <- do.call(cbind,dfs)
@@ -186,10 +183,10 @@ expansao_hotspots_sum <- expansao_hotspots%>%
 # aqui mantem o nome do hotspot!
 expansao_hotspots_2 <- expansao_hotspots%>%
   pivot_longer(cols = 1:4)%>%
-  group_by(AggrgtR,NAME)%>%
+  group_by(AggrgtR,NAME,name)%>%
   summarise(total_area=sum(value,na.rm = T))
 
-write.csv(expansao_hotspots_2,"/dados/pessoal/francisco/TradeHub/output_tables/updated_results/overlap_hotspots_11_regions_agriexp.csv")
+write.csv(expansao_hotspots_2,"/dados/pessoal/francisco/TradeHub/output_tables/updated_results/overlap_hotspots_11_regions_agriexp.csv",row.names = F)
 
 
 # add can==0

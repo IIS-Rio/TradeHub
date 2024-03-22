@@ -57,7 +57,9 @@ ec_p2 <- st_as_sf(ec_p)%>%
 
 
 names(ec_p2)[1] <- "BIOME_NUM"
+
 ec_p2$BIOME_NAME <- as.character(ec_p2$BIOME_NAME)
+
 ec <- st_read("/dados/bd_iis/ecoregions_esa_2017/Ecoregions2017_moll.shp")%>%
   st_transform(crs(r_m))
 
