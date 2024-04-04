@@ -11,9 +11,21 @@ scen_nms_C <- c("Fr","BAU","Tr","Ta","ETL")
 scen_nms <- c("Fr","BAU","Tr","ETL","Ta")
 
 
-r <- scens_trade[[1]]
+r <- scens_trade[[4]]
 
-# limites globo
+mask <- rast("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/variables/CBD-carbon_layer_updated_reproj.tif")
+mask[mask==0] <- NA
+mask[!is.na(mask)] <- 1 
+
+r <- r*mask
+
+# # exploracao de como plotar!!
+# r2 <- r
+# 
+# summary(r2[])
+# hist(r2[])
+# plot(r<(-0.05))
+# # limites globo
 
 data(wrld_simpl)
 
@@ -30,7 +42,7 @@ plot_list_base <- list()
 for(i in seq_along(scen_nms)){
   
   bd <- scens_trade[[i]]
-  
+  bd <- bd*mask
   bd_df <- as.data.frame(bd,xy=TRUE)
   
   names(bd_df)[3] <- "bd"
@@ -38,14 +50,16 @@ for(i in seq_along(scen_nms)){
   bd_df <- filter(bd_df,bd!=0,
                   !is.na(bd))
   
-  bd_df$trans <- asinh(bd_df$bd)
+  #bd_df$trans <- asinh(bd_df$bd)
   
   bd_map <- bd_df%>%
     filter(!is.na(bd))%>%
-    mutate(scaled_bd = trans/abs(min(trans)))%>%
+    mutate(scaled_bd = bd/abs(min(bd)),
+           #scaled_bd=if_else(scaled_bd>=-0.05,0,scaled_bd)
+           )%>%
     ggplot()+
     geom_raster(aes(x = x,y = y,fill=scaled_bd))+
-    scale_fill_viridis(option="turbo","bd")+
+    scale_fill_viridis(option="turbo","bd",direction = -1,limits=c(-1,-0.95))+
     #ggtecle(scen[i])+
     theme_map()+
     labs(
@@ -111,3 +125,13 @@ pannel_converted_areas_C <- ggarrange(plot_list_C[[5]],plot_list_C[[4]],plot_lis
 
 ggsave(filename = "/dados/pessoal/francisco/TradeHub/fig_sup/converted_areas_C.png",pannel_converted_areas_C,scale = 1,width = 16,height = 20,units = "cm")
 
+teste <-log10(scens_trade[[1]]*-1+0.000001)*-1
+teste[teste==6] <- NA
+hist(teste)
+teste2 <- teste
+teste2[teste2>2] <- 2
+teste2[teste2]
+color_range <- rgb(0, 0, seq(0, 255, length.out = 100), maxColorValue = 255)
+plot(teste2,col=color_range)
+?asinh
+summary(asin(teste))
