@@ -16,7 +16,7 @@ library(fasterize)
 # essa seção só precisa ser feita uma vez. ir direto pra de baixo
 
 ipcc_climatic = rast("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/ipcc_zones_2017.tif")
-plot(ipcc_climatic)
+#plot(ipcc_climatic)
 # # adjust pj
 # rbase <- raster("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/rawdata/land-use/agriculture.tif")
 # rbase <- rbase/rbase
@@ -149,6 +149,7 @@ scens = list.dirs(path = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/r
 
 # mudancas 2020-2050
 
+# corrigir aqui, usar deltas certos depois
 deltas <- list.files("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/Deltas",recursive = F)
 
 
@@ -382,7 +383,7 @@ emission_factors2$Continent[emission_factors2$Continent=="Americans"] = "America
   
   carbon_emissions_IPCC <- rasterize(df_vect,y = base_ras,field="Cstock_emmited")
   CO2eq_IPCC <- rasterize(df_vect,y = base_ras,field="CO2_eq")
-  plot(CO2eq_IPCC)
+  #plot(CO2eq_IPCC)
   # salvando tabela e raster
   
   dest <- file.path("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/carbon_balance_IPCC",scen)
