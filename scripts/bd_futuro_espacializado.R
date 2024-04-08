@@ -6,6 +6,7 @@
 
 
 library(devtools)
+library(raster)
 
 #devtools::load_all("/dados/pessoal/luga/dev/plangea-pkg/")
 
@@ -24,7 +25,8 @@ names(res_tbl) = c("gcms",  "scens")
 #res_tbl$bd_agg = NA
 
 # Input data
-x_vals_folder = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/Deltas/delta_rest"
+# x_vals_folder = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/restoration_transitions/Deltas/delta_rest"
+x_vals_folder = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/global"
 hab_now_folder = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/global_climate_hab_now/"
 hab_pot_folder = "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/global_climate_hab_pot/"
 
@@ -70,7 +72,8 @@ for (row_n in 1:nrow(res_tbl)) {
   # Reading required objects
   in_data = aux_load(paste0(hab_now_folder, row_vals$gcms, "/", row_vals$scens, "/processed/harmonize_full_envir.qs"))
   hab_pot_areas = aux_load(paste0(hab_pot_folder, row_vals$scens, "/processed/harmonize_full_envir.qs"))$hab_pot_areas
-  x_vals = aux_load_raster(paste0(x_vals_folder,"/delta_rest_", row_vals$scens, ".tif"), in_data$master_index)
+  #x_vals = aux_load_raster(paste0(x_vals_folder,"/delta_rest_", row_vals$scens, ".tif"), in_data$master_index)
+  x_vals = aux_load(paste0(x_vals_folder,"/globiom_iiasa_",row_vals$scens, "/results/solver_runs/", 'solver_future_land_use'))
   
   result = multi_exrisk_aggregate_mod(x_vals = x_vals, prop_restore = in_data$prop_restore, usphab_proc = in_data$usphab_proc, usphab_index = in_data$usphab_index, hab_now_areas = in_data$hab_now_areas,hab_pot_areas = hab_pot_areas, spp_main_range = in_data$spp_main_range,master_index = in_data$master_index,use_restor_weight = T)
   
@@ -79,8 +82,8 @@ for (row_n in 1:nrow(res_tbl)) {
   scen_nm <- res_tbl[row_n,2]
   gc_nm <- res_tbl[row_n,1]
   #results_list[row_n] <-  raster_resultado   
-  writeRaster(x = raster_resultado,paste0("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/bd_future_per_clim_env/",scen_nm,"_",gc_nm,".tif"))
-  print(row_n)
+  raster::writeRaster(x = raster_resultado,paste0("/dados/projetos_andamento/TRADEhub/trade_hub_plangea/bd_future_per_clim_env/",scen_nm,"_",gc_nm,".tif"),overwrite=T)
+  #print(row_n)
   #return(results_list)
   
 }
@@ -107,12 +110,12 @@ stopCluster(cl)
 
 
 
-avg_bd <- res_tbl%>%
-  group_by(scens)%>%
-  summarise(mean_bd=mean(bd_agg))
-
-# media da lista de resultados! mas precisava ser por scenario, merda.
-# talvez pela ordem de pra fazer.
-
-
-write.csv(avg_tbl,"/dados/pessoal/francisco/TradeHub/output_tables/updated_results/agg_bd_climate_env_global.csv",row.names = F)
+# avg_bd <- res_tbl%>%
+#   group_by(scens)%>%
+#   summarise(mean_bd=mean(bd_agg))
+# 
+# # media da lista de resultados! mas precisava ser por scenario, merda.
+# # talvez pela ordem de pra fazer.
+# 
+# 
+# write.csv(avg_tbl,"/dados/pessoal/francisco/TradeHub/output_tables/updated_results/agg_bd_climate_env_global.csv",row.names = F)

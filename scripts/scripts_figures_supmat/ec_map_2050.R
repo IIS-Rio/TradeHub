@@ -16,7 +16,7 @@ scens <- list.files(p,pattern = "ec_",full.names = T)
 scens_C <- rast(grep(pattern = "_BIOD_",x = scens,value = T))
 scens_trade <- rast(grep(pattern = "_BIOD_",x = scens,value = T,invert = T))
 
-scen_nms_C <- c("Fr","BAU","Tr","Ta","ETL")
+scen_nms_C <- c("Fr","Trade-base","Tr","Ta","ETL")
 scen_nms <- c("BAU","Fr","Tr","Ta","ETL")
 
 
@@ -154,55 +154,77 @@ pannel_ratio_bau_base <- ggarrange(plot_list_base_bau[[5]],plot_list_base_bau[[4
 ggsave(filename = "/dados/pessoal/francisco/TradeHub/fig_sup/delta_ec_ratio2050_trade_scens.png",pannel_ratio_bau_base,scale = 1,width = 16,height = 20,units = "cm")
 
 
-# cenarios com C
+# cenarios com C (fiz so o delta!!)
 
-plot_list_C <- list()
+#plot_list_C <- list()
+
+plot_list_C_bau <- list()
+
+#turbo(20)
+
+# paleta so de valores positivos
+pal_Etl <- c("#30123BFF" ,"#3F3994FF" ,"#455ED2FF", "#4681F7FF", "#3AA2FCFF", "#23C3E4FF", "#18DEC1FF", "#2CF09EFF","#5BFB72FF", "#8EFF49FF" ,"#B5F836FF","#D6E635FF", "#EFCD3AFF")
+
+
+pal_rest <- c("#30123BFF" ,"#3F3994FF" ,"#455ED2FF", "#4681F7FF", "#3AA2FCFF", "#23C3E4FF", "#18DEC1FF", "#2CF09EFF","#5BFB72FF", "#8EFF49FF" ,"#B5F836FF")
 
 for(i in seq_along(scen_nms_C)){
-  bd <- scens_C[[i]]
   
-  bd_df <- as.data.frame(bd,xy=TRUE)
+  ec <- scens_C[[i]]
+  # os cenarios de conservacao, nao sei pq, salvou 0 como NA
+  ec[is.na(ec)] <- 0
+  ec <- ec*mask
+  delta <- ec - ec_presente
+  #value-value[label_scen=="BAU"])/abs(value[label_scen=="BAU"])
   
-  names(bd_df)[3] <- "bd"
+  delta_bau <- (delta - delta_BAU_2050)/(abs(delta_BAU_2050))
   
-  bd_df <- filter(bd_df,bd!=0,
-                  !is.na(bd))
+  # achatando valores
   
-  bd_df$trans <- asinh(bd_df$bd)
+  #delta_bau[delta_bau<(-1)] <- -1
+  #delta_bau[delta_bau>(1)] <- 1
   
-  bd_map_C <- bd_df%>%
-    filter(!is.na(bd))%>%
-    mutate(scaled_bd = trans/abs(min(trans)))%>%
+  ec_df_delta <- as.data.frame(delta_bau,xy=TRUE)
+  
+  names(ec_df_delta)[3] <- "ec"
+  
+  ec_df_delta <- filter(ec_df_delta,
+                  !is.na(ec))
+  
+  # ajustando variavel
+  
+  ec_df_delta$ec <- round(ec_df_delta$ec/abs(max(ec_df_delta$ec)),2)
+  #breaks = (round(seq(min(ec_df_delta$ec),max(ec_df_delta$ec),0.05),2))
+  ec_df_delta$ec_cat <- discretize(ec_df_delta$ec,method = "fixed",breaks = seq(-0.5,1,0.05))
+  
+  if(i==5){paleta=pal_Etl}else{paleta=pal_rest}
+  
+  ec_map_delta_C <- ec_df_delta%>%
+    filter(!is.na(ec))%>%
     ggplot()+
-    geom_raster(aes(x = x,y = y,fill=scaled_bd))+
-    scale_fill_viridis(option="turbo","bd")+
+    geom_raster(aes(x = x,y = y,fill=ec_cat))+
+    #scale_fill_viridis(option="turbo","ec",direction =  -1,limecs=c(-1,1))+
+    #scale_fill_viridis_d(option="turbo","ec",direction = -1)+
+    scale_fill_manual(values=rev(paleta))+
     #ggtecle(scen[i])+
     theme_map()+
     labs(
       title = scen_nms_C[i],
       x = "",
       y = "",
-      fill="bd")+
+      fill="ec")+
     #  theme(plot.margin = margin(-3, -2, -3, -3, "cm"))+
     theme(  legend.text = element_text(size=4.5),
             legend.title = element_text(size=4.5)) 
   
-  plot_list_C[[i]] <- bd_map_C
-}
+  plot_list_C_bau[[i]] <- ec_map_delta_C 
 
-pannel_converted_areas_C <- ggarrange(plot_list_C[[5]],plot_list_C[[4]],plot_list_C[[3]],plot_list_C[[1]],plot_list_C[[2]],common.legend = T,nrow=3,ncol=2)
+  #plot_list_C_bau <- 
+  
+  }
 
-# rever. ta estranho pq tem mto mais conversao no com conservacao, acho q ta invertido! negativo sendo conversao e positivo restauracao!
+pannel_converted_areas_C <- ggarrange(plot_list_C_bau[[5]],plot_list_C_bau[[4]],plot_list_C_bau[[3]],plot_list_C_bau[[1]],plot_list_C_bau[[2]],nrow=3,ncol=2,common.legend = T)
 
-ggsave(filename = "/dados/pessoal/francisco/TradeHub/fig_sup/converted_areas_C.png",pannel_converted_areas_C,scale = 1,width = 16,height = 20,units = "cm")
 
-teste <-log10(scens_trade[[1]]*-1+0.000001)*-1
-teste[teste==6] <- NA
-hist(teste)
-teste2 <- teste
-teste2[teste2>2] <- 2
-teste2[teste2]
-color_range <- rgb(0, 0, seq(0, 255, length.out = 100), maxColorValue = 255)
-plot(teste2,col=color_range)
-?asinh
-summary(asin(teste))
+ggsave(filename = "/dados/pessoal/francisco/TradeHub/fig_sup/delta_ec_ratio2050_C_scens.png",pannel_converted_areas_C,scale = 1,width = 16,height = 20,units = "cm")
+
