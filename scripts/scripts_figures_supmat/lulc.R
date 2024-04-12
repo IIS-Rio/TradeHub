@@ -212,7 +212,7 @@ otn_plot <- ggplot(remainin_nat)+
     title = "",
     x = "",
     y = "",
-    fill="other nat. areas (%)")+
+    fill="o.n.a. (%)")+
   #  theme(plot.margin = margin(-3, -2, -3, -3, "cm"))+
   theme(  legend.text = element_text(size=4.5),
           legend.title = element_text(size=4.5)) 
@@ -231,7 +231,7 @@ ignored_plot <- ggplot(ignored_df)+
     title = "",
     x = "",
     y = "",
-    fill="ignored (%)")+
+    fill="o.n.n.a. (%)")+
   #  theme(plot.margin = margin(-3, -2, -3, -3, "cm"))+
   theme(  legend.text = element_text(size=4.5),
           legend.title = element_text(size=4.5)) 

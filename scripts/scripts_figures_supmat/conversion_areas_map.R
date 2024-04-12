@@ -7,7 +7,7 @@ scens_C <- rast(list.files(p,pattern = "_BIOD_",full.names = T))
 
 
 scen_nms <- c("Fr","BAU","Tr","ETL","Ta")
-scen_nms_C <- c("Fr","BAU","Tr","Ta","ETL")
+scen_nms_C <- c("Fr","Trade-base","Tr","Ta","ETL")
 
 r <- scens[[1]]
 
@@ -22,6 +22,29 @@ wrld_simpl <- wrld_simpl[-which(wrld_simpl$NAME == "Antarctica"),]
 # projetando
 
 wrld_transf <- spTransform(wrld_simpl, crs(r))
+
+
+#terrain_pal <- (terrain.colors(20))
+
+terrain_pal <- c( "#E7D217", "#E8C32E", "#E9B846", "#EBB25E",
+"#ECB176", "#EDB48E" ,"#EEBCA7", "#F0C9C0", "#F1DBD9" ,"#F2F2F2")
+
+
+# Define the start color, middle color (yellow), and end color
+start_color <- "#F2F2F2"  # Light gray
+middle_color <- "#FFFF00" # Yellow
+end_color <- "#FF0000"    # Red
+
+# Define the number of colors in the gradient palette
+num_colors <- 10
+
+# Generate the gradient palette function
+gradient_palette <- colorRampPalette(c(start_color, middle_color, end_color))
+
+# Generate the gradient palette with specified number of colors
+gradient_colors <- gradient_palette(num_colors)
+
+# Output the generated gradient colors
 
 plot_list_base <- list()
 
@@ -39,7 +62,8 @@ for(i in seq_along(scen_nms)){
     geom_raster(aes(x = x,y = y,fill=sum))+
     #geom_sf(data = regions_pj, fill = "transparent", color = "black") +  
     #scale_fill_gradient(low = "orange", high = "darkred",limits=c(0,1))+
-    scale_fill_viridis_c(option ="inferno",limits=c(0,1))+
+    #scale_fill_viridis_c(option ="inferno",limits=c(0,1))+
+    scale_fill_gradientn(colours = gradient_colors)+
     theme_map()+
     labs(
       title = scen_nms[i],
@@ -77,7 +101,8 @@ for(i in seq_along(scen_nms_C)){
     geom_raster(aes(x = x,y = y,fill=sum))+
     #geom_sf(data = regions_pj, fill = "transparent", color = "black") +  
     #scale_fill_gradient(low = "orange", high = "darkred",limits=c(0,1))+
-    scale_fill_viridis_c(option ="inferno",limits=c(0,1))+
+    #scale_fill_viridis_c(option ="inferno",limits=c(0,1))+
+    scale_fill_gradientn(colours = gradient_colors)+
     theme_map()+
     labs(
       title = scen_nms_C[i],

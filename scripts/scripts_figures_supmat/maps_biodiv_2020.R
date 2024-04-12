@@ -1,6 +1,6 @@
 # um mapa com cada uma das variaveis de biodiversidade em 2020 - q sao atualizadas pro futuro
 
-p <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/global/globiom_iiasa_baseline/results/post_processed/input_variables"
+p <- "/dados/projetos_andamento/TRADEhub/trade_hub_plangea/global/globiom_iiasa_TH_TFBASE_TCBASE_NOBIOD_NOTECH_NODEM_SPA0_SSP2/results/post_processed/input_variables"
 
 # ec
 
@@ -43,7 +43,6 @@ ec_map <- ec_df%>%
 # bd
 
 bd <- rast(file.path(p,"bd_2022-11-09.tif"))
-
 
 bd_df <- as.data.frame(bd,xy=TRUE)
 
@@ -110,7 +109,7 @@ it_map <- it_df%>%
   mutate(scaled_it = range01(it_log10))%>%
   ggplot()+
   geom_raster(aes(x = x,y = y,fill=scaled_it))+
-  scale_fill_viridis(option="turbo","it")+
+  scale_fill_viridis(option="turbo","it",direction = -1)+
   #ggtitle(scen[i])+
   theme_map()+
   labs(

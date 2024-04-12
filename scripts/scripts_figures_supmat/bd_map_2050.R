@@ -243,7 +243,7 @@ for(i in seq_along(scen_nms_C)){
       #ggtitle(scen[i])+
       theme_map()+
       labs(
-        title = scen_nms[i],
+        title = scen_nms_C[i],
         x = "",
         y = "",
         fill="bd")+
